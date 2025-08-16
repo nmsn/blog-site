@@ -4,10 +4,20 @@ import Footer from '@/components/Footer'
 import Link from '@/components/Link'
 import { WobbleContent } from '@/components/ui/WobbleContent'
 import headerNavLinks from '@/data/headerNavLinks'
+// import DarkVeil from '@/components/ui/DarkVeil'
+// import Aurora from '@/components/ui/Aurora'
+// import Particles from '@/components/ui/Particles'
+// import Threads from '@/components/ui/Threads'
+// import Squares from '@/components/ui/Squares'
 
 export default async function Page() {
   return (
     <div className="flex h-dvh w-full flex-col items-center justify-between">
+      {/* <DarkVeil /> */}
+      {/* <Aurora /> */}
+      {/* <Particles /> */}
+      {/* <Threads /> */}
+      {/* <Squares /> */}
       <main className="flex h-[90vh] w-full flex-col items-center">
         <Header />
         <WobbleContent containerClassName="max-w-[1024px]">
