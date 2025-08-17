@@ -139,8 +139,18 @@ const Particles: React.FC<ParticlesProps> = ({
       mouseRef.current = { x, y }
     }
 
+    const handleParticlesMouseMove = (e: CustomEvent) => {
+      const rect = container.getBoundingClientRect()
+      const x = ((e.detail.clientX - rect.left) / rect.width) * 2 - 1
+      const y = -(((e.detail.clientY - rect.top) / rect.height) * 2 - 1)
+      mouseRef.current = { x, y }
+    }
+
     if (moveParticlesOnHover) {
-      container.addEventListener('mousemove', handleMouseMove)
+      // 监听整个文档的鼠标移动事件，而不仅仅是容器
+      document.addEventListener('mousemove', handleMouseMove)
+      // 监听来自 WobbleContent 的自定义事件
+      document.addEventListener('particlesMouseMove', handleParticlesMouseMove as EventListener)
     }
 
     const count = particleCount
@@ -220,7 +230,11 @@ const Particles: React.FC<ParticlesProps> = ({
     return () => {
       window.removeEventListener('resize', resize)
       if (moveParticlesOnHover) {
-        container.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener(
+          'particlesMouseMove',
+          handleParticlesMouseMove as EventListener
+        )
       }
       cancelAnimationFrame(animationFrameId)
       if (container.contains(gl.canvas)) {
@@ -231,6 +245,7 @@ const Particles: React.FC<ParticlesProps> = ({
     particleCount,
     particleSpread,
     speed,
+    particleColors,
     moveParticlesOnHover,
     particleHoverFactor,
     alphaParticles,

@@ -21,6 +21,12 @@ export const WobbleContent = ({
     const x = (clientX - (rect.left + rect.width / 2)) / 20
     const y = (clientY - (rect.top + rect.height / 2)) / 20
     setMousePosition({ x, y })
+
+    // 创建并分发自定义事件给 Particles 组件
+    const particlesEvent = new CustomEvent('particlesMouseMove', {
+      detail: { clientX, clientY },
+    })
+    document.dispatchEvent(particlesEvent)
   }
   return (
     <motion.section
