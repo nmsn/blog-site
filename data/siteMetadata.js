@@ -1,8 +1,8 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: "NMSN's Blog",
+  title: "NMSN's",
   author: 'NMSN',
-  headerTitle: 'NMSNBlog',
+  headerTitle: 'NMSN',
   description: 'A blog created with Next.js and Tailwind.css',
   language: 'en-us',
   theme: 'system', // system, dark or light
