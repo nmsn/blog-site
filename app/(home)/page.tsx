@@ -1,10 +1,10 @@
-import Logo from '@/data/logo.svg'
 import Header from './Header'
 import Footer from '@/components/Footer'
 import Link from '@/components/Link'
 import { WobbleContent } from '@/components/ui/WobbleContent'
 import headerNavLinks from '@/data/headerNavLinks'
 import Particles from '@/components/ui/Particles'
+import Image from 'next/image'
 
 export default async function Page() {
   return (
@@ -20,7 +20,7 @@ export default async function Page() {
         <Header />
         <WobbleContent containerClassName="max-w-[480px] mt-20">
           <Link href="/">
-            <Logo />
+            <Image src="/logo.svg" alt="Logo" width={480} height={480} priority />
           </Link>
         </WobbleContent>
         <nav className="mt-20 flex justify-between gap-x-20">
