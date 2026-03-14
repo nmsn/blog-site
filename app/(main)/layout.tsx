@@ -1,17 +1,13 @@
 import { SearchProvider, SearchConfig } from 'pliny/search'
-import Header from '@/components/Header'
-import SectionContainer from '@/components/SectionContainer'
-import Footer from '@/components/Footer'
+import ShellFrame from '@/components/shell/ShellFrame'
 import siteMetadata from '@/data/siteMetadata'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SectionContainer>
+    <div className="min-h-screen bg-[#f5f0e8]">
       <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
-        <Header />
-        <main className="mb-auto">{children}</main>
+        <ShellFrame>{children}</ShellFrame>
       </SearchProvider>
-      <Footer />
-    </SectionContainer>
+    </div>
   )
 }

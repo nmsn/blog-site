@@ -130,6 +130,8 @@ const Particles: React.FC<ParticlesProps> = ({
       camera.perspective({ aspect: gl.canvas.width / gl.canvas.height })
     }
     window.addEventListener('resize', resize, false)
+    const resizeObserver = new ResizeObserver(() => resize())
+    resizeObserver.observe(container)
     resize()
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -229,6 +231,7 @@ const Particles: React.FC<ParticlesProps> = ({
 
     return () => {
       window.removeEventListener('resize', resize)
+      resizeObserver.disconnect()
       if (moveParticlesOnHover) {
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener(
