@@ -82,7 +82,7 @@ export default function ListLayoutWithTags({
 
   return (
     <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
-      <PageHeader label="Journal" title={title} className="pb-8" />
+      <PageHeader title={title} className="pb-8" />
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <aside className="hidden lg:block lg:w-[260px] lg:flex-none">

@@ -1,6 +1,6 @@
 interface PageHeaderProps {
-  label: string
   title: string
+  label?: string
   description?: string
   className?: string
 }

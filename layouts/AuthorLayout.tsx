@@ -14,7 +14,7 @@ export default function AuthorLayout({ children, content }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
-      <PageHeader label="Profile" title="About" className="pb-8" />
+      <PageHeader title="About" className="pb-8" />
 
       <div className="items-start gap-x-12 pt-8 xl:grid xl:grid-cols-[280px_minmax(0,1fr)] xl:pt-10">
         <div className="flex flex-col items-center border border-black/12 bg-white px-6 py-8 dark:border-white/15 dark:bg-black">

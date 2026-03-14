@@ -13,12 +13,7 @@ export default async function Page() {
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
   return (
     <div className="mx-auto w-full max-w-5xl pb-14 md:pb-20">
-      <PageHeader
-        label="Index"
-        title="Tags"
-        description="Browse writing by topic without leaving the shell. The content area scrolls on its own so the overall frame stays pinned to the viewport."
-        className="pb-8"
-      />
+      <PageHeader title="Tags" className="pb-8" />
 
       <div className="border border-black/12 bg-white px-5 py-6 md:px-7 md:py-7 dark:border-white/15 dark:bg-black">
         <div className="flex flex-wrap gap-x-5 gap-y-3">

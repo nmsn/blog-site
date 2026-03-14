@@ -8,12 +8,7 @@ export const metadata = genPageMetadata({ title: 'Projects' })
 export default function Projects() {
   return (
     <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
-      <PageHeader
-        label="Work"
-        title="Projects"
-        description="Showcase your projects with a hero image (16 x 9)"
-        className="pb-8"
-      />
+      <PageHeader title="Projects" className="pb-8" />
       <div className="-m-4 flex flex-wrap">
         {projectsData.map((d) => (
           <Card
