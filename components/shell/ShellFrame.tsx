@@ -37,11 +37,11 @@ export default function ShellFrame({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="relative min-h-screen opacity-100 transition-opacity duration-150 md:flex">
+    <div className="relative h-dvh overflow-hidden opacity-100 transition-opacity duration-150 md:flex">
       <SidebarShell entering={isEntering} onRequestHome={beginExit} />
       <main
         className={cn(
-          'min-h-[calc(100vh-260px)] flex-1 bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.16))] px-5 pt-8 pb-10 backdrop-blur-[8px] transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:min-h-screen md:px-10 md:pt-11 md:pb-12',
+          'h-[calc(100dvh-260px)] flex-1 overflow-y-auto overscroll-y-contain bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.16))] px-5 pt-8 pb-10 backdrop-blur-[8px] transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] [scrollbar-color:rgba(13,26,39,0.18)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] md:h-dvh md:px-10 md:pt-11 md:pb-12 [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 [&::-webkit-scrollbar-track]:bg-transparent',
           isEntering ? 'translate-x-24 opacity-0' : 'translate-x-0 opacity-100 delay-200'
         )}
       >

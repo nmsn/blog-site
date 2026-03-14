@@ -11,31 +11,35 @@ export default async function Page() {
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
   return (
-    <>
-      <div className="flex flex-col items-start justify-start divide-y divide-gray-200 md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6 md:divide-y-0 dark:divide-gray-700">
-        <div className="space-x-2 pt-6 pb-8 md:space-y-5">
-          <h1 className="text-3xl leading-9 font-extrabold tracking-tight text-gray-900 sm:text-4xl sm:leading-10 md:border-r-2 md:px-6 md:text-6xl md:leading-14 dark:text-gray-100">
-            Tags
-          </h1>
-        </div>
-        <div className="flex max-w-lg flex-wrap">
-          {tagKeys.length === 0 && 'No tags found.'}
-          {sortedTags.map((t) => {
-            return (
-              <div key={t} className="mt-2 mr-5 mb-2">
-                <Tag text={t} />
-                <Link
-                  href={`/tags/${slug(t)}`}
-                  className="-ml-2 text-sm font-semibold text-gray-600 uppercase dark:text-gray-300"
-                  aria-label={`View posts tagged ${t}`}
-                >
-                  {` (${tagCounts[t]})`}
-                </Link>
-              </div>
-            )
-          })}
+    <div className="mx-auto w-full max-w-5xl pb-14 md:pb-20">
+      <div className="pb-8">
+        <div className="text-[11px] tracking-[0.14em] text-black/45 uppercase">Index</div>
+        <h1 className="mt-3 text-4xl leading-none font-semibold tracking-tight text-[#0d1a27] md:text-6xl">
+          Tags
+        </h1>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-black/60 md:text-base">
+          Browse writing by topic without leaving the shell. The content area scrolls on its own so
+          the overall frame stays pinned to the viewport.
+        </p>
+      </div>
+
+      <div className="border border-black/6 bg-white/34 px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm md:px-7 md:py-7">
+        <div className="flex flex-wrap gap-x-5 gap-y-3">
+          {tagKeys.length === 0 && <span className="text-sm text-black/55">No tags found.</span>}
+          {sortedTags.map((t) => (
+            <div key={t} className="flex items-center gap-1.5">
+              <Tag text={t} />
+              <Link
+                href={`/tags/${slug(t)}`}
+                className="text-sm font-semibold text-black/58 uppercase transition-colors duration-200 hover:text-[#27A6DE]"
+                aria-label={`View posts tagged ${t}`}
+              >
+                {`(${tagCounts[t]})`}
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }

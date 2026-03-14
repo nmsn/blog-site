@@ -16,7 +16,7 @@ export default function SidebarShell({
   return (
     <aside
       className={cn(
-        'relative min-h-[260px] overflow-hidden text-white transition-[width] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:min-h-screen md:flex-none',
+        'relative h-[260px] overflow-hidden text-white transition-[width] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:h-dvh md:flex-none',
         entering ? 'bg-[#07131f] md:w-full' : 'bg-transparent md:w-[320px]'
       )}
     >

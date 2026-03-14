@@ -15,7 +15,7 @@ export default function ShellContentTransition({ children }: { children: ReactNo
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -12 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="h-full"
+        className="min-h-full"
       >
         {children}
       </motion.div>

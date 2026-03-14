@@ -80,8 +80,8 @@ export default function ListLayoutWithTags({
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
-      <div className="pb-6">
+    <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
+      <div className="pb-8">
         <div className="text-[11px] tracking-[0.14em] text-black/45 uppercase">Journal</div>
         <h1 className="mt-3 text-4xl leading-none font-semibold tracking-tight text-[#0d1a27] md:text-6xl">
           {title}
@@ -94,7 +94,7 @@ export default function ListLayoutWithTags({
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <aside className="hidden lg:block lg:w-[260px] lg:flex-none">
-          <div className="sticky top-10 overflow-auto border border-black/6 bg-white/36 px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm">
+          <div className="sticky top-6 max-h-[calc(100dvh-7rem)] overflow-auto border border-black/6 bg-white/36 px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm [scrollbar-color:rgba(13,26,39,0.12)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-track]:bg-transparent">
             <div className="px-1">
               {pathname.startsWith('/blog') ? (
                 <h3 className="text-primary-500 text-xs font-bold tracking-[0.12em] uppercase">
@@ -135,7 +135,7 @@ export default function ListLayoutWithTags({
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pb-4">
           <ul className="divide-y divide-black/8">
             {displayPosts.map((post) => {
               const { path, date, title, summary, tags } = post
