@@ -6,7 +6,7 @@ import { WobbleContent } from '@/components/ui/WobbleContent'
 import headerNavLinks from '@/data/headerNavLinks'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useEffect, useLayoutEffect, useMemo, useState, startTransition } from 'react'
+import { useEffect, useMemo, useState, startTransition } from 'react'
 import Header from '../../app/(home)/Header'
 
 const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.href !== '/travel')
@@ -70,19 +70,14 @@ function ShellPreviewSkeleton() {
 export default function HomeHero() {
   const router = useRouter()
   const [transitioning, setTransitioning] = useState(false)
-  const [returning, setReturning] = useState(false)
   const [targetHref, setTargetHref] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
 
   const logoTarget = useMemo(() => '/blog', [])
 
   useEffect(() => {
-    // 检查是否从 shell 返回
-    const isReturning = window.sessionStorage.getItem('home-entry') === '1'
-    if (isReturning) {
-      setReturning(true)
+    if (window.sessionStorage.getItem('home-entry') === '1') {
+      window.sessionStorage.removeItem('home-entry')
     }
-    setMounted(true)
   }, [])
 
   useEffect(() => {
@@ -104,26 +99,6 @@ export default function HomeHero() {
     return () => window.clearTimeout(timer)
   }, [router, targetHref, transitioning])
 
-  useLayoutEffect(() => {
-    if (!returning) return
-
-    window.sessionStorage.removeItem('home-entry')
-    let settleTimer = 0
-
-    const frame = window.requestAnimationFrame(() => {
-      settleTimer = window.setTimeout(() => {
-        setReturning(false)
-      }, 40)
-    })
-
-    return () => {
-      window.cancelAnimationFrame(frame)
-      if (settleTimer) {
-        window.clearTimeout(settleTimer)
-      }
-    }
-  }, [returning])
-
   const beginTransition = (href: string) => {
     if (transitioning) return
     window.sessionStorage.setItem('shell-entry', '1')
@@ -131,7 +106,7 @@ export default function HomeHero() {
     setTransitioning(true)
   }
 
-  const shellPreview = transitioning || returning
+  const shellPreview = transitioning
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-white text-black dark:bg-black dark:text-white">
@@ -175,7 +150,7 @@ export default function HomeHero() {
         <main className="flex flex-1 flex-col items-center justify-center px-6 pb-12">
           <div
             className={`absolute top-1/2 left-1/2 z-20 w-[min(44vw,380px)] -translate-x-1/2 -translate-y-[56%] transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
-              transitioning || returning
+              transitioning
                 ? 'top-5 left-5 w-24 translate-x-0 translate-y-0 md:top-7 md:left-8 md:w-28'
                 : ''
             }`}
@@ -197,7 +172,7 @@ export default function HomeHero() {
 
             <nav
               className={`mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 transition-all duration-500 ease-[cubic-bezier(0.77,0,0.18,1)] md:mt-24 ${
-                transitioning || returning ? 'translate-y-6 opacity-0' : 'translate-y-0 opacity-100'
+                transitioning ? 'translate-y-6 opacity-0' : 'translate-y-0 opacity-100'
               }`}
             >
               {shellLinks.map((link) => (
@@ -215,7 +190,7 @@ export default function HomeHero() {
         </main>
 
         <div
-          className={`relative z-10 transition-opacity duration-300 ${transitioning || returning ? 'opacity-0' : 'opacity-100'}`}
+          className={`relative z-10 transition-opacity duration-300 ${transitioning ? 'opacity-0' : 'opacity-100'}`}
         >
           <Footer />
         </div>

@@ -8,10 +8,12 @@ import { cn } from '@/lib/utils'
 
 export default function SidebarShell({
   entering = false,
+  exiting = false,
   onRequestHome,
   onNavigate,
 }: {
   entering?: boolean
+  exiting?: boolean
   onRequestHome?: () => void
   onNavigate?: (href: string) => void
 }) {
@@ -41,7 +43,7 @@ export default function SidebarShell({
       <div
         className={cn(
           'relative z-10 flex h-full flex-col px-5 pt-5 pb-8 transition-opacity duration-500 md:px-8 md:pt-7 md:pb-10',
-          entering ? 'opacity-85' : 'opacity-100'
+          entering ? 'opacity-85' : exiting ? 'opacity-92' : 'opacity-100'
         )}
       >
         <button
@@ -56,11 +58,16 @@ export default function SidebarShell({
             width={112}
             height={112}
             priority
-            className="h-auto w-24 transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:w-28"
+            className={cn(
+              'h-auto w-24 transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:w-28',
+              exiting && 'scale-[1.06] opacity-90'
+            )}
           />
         </button>
 
-        <div className="mt-8 md:mt-10">
+        <div
+          className={cn('mt-8 transition-opacity duration-300 md:mt-10', exiting && 'opacity-0')}
+        >
           <ShellNav onNavigate={onNavigate} />
         </div>
       </div>
