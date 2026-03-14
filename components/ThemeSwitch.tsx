@@ -54,8 +54,10 @@ const ThemeSwitch = () => {
   // When mounted on client, now we can show the UI
   useEffect(() => setMounted(true), [])
 
-  const currentTheme =
-    theme && themeOrder.includes(theme as (typeof themeOrder)[number]) ? theme : 'system'
+  const currentTheme: (typeof themeOrder)[number] =
+    theme && themeOrder.includes(theme as (typeof themeOrder)[number])
+      ? (theme as (typeof themeOrder)[number])
+      : 'system'
   const currentIndex = themeOrder.indexOf(currentTheme)
   const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length]
 

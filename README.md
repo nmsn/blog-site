@@ -9,7 +9,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/timlrx/tailwind-nextjs-starter-blog)
 
-This is a [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/) blogging starter template. Version 2 is based on Next App directory with [React Server Component](https://nextjs.org/docs/getting-started/react-essentials#server-components) and uses [Contentlayer](https://www.contentlayer.dev/) to manage markdown content.
+This is a [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/) blogging starter template. Version 2 is based on Next App directory with [React Server Component](https://nextjs.org/docs/getting-started/react-essentials#server-components) and uses [content-collections](https://www.content-collections.dev/) to manage markdown content.
 
 Probably the most feature-rich Next.js markdown blogging template out there. Easily configurable and customizable. Perfect as a replacement to existing Jekyll and Hugo individual blogs.
 
@@ -136,7 +136,7 @@ I wanted it to be nearly as feature-rich as popular blogging templates like [bea
 ## Features
 
 - Next.js with Typescript
-- [Contentlayer](https://www.contentlayer.dev/) to manage content logic
+- [content-collections](https://www.content-collections.dev/) to manage content logic
 - Easy styling customization with [Tailwind 3.0](https://tailwindcss.com/blog/tailwindcss-v3) and primary color attribute
 - [MDX - write JSX in markdown documents!](https://mdxjs.com/)
 - Near perfect lighthouse score - [Lighthouse report](https://www.webpagetest.org/result/230805_BiDcBQ_4H7)
@@ -233,7 +233,7 @@ Edit the layout in `app` or content in `data`. With live reloading, the pages au
 
 `css/prism.css` - controls the styles associated with the code blocks. Feel free to customize it and use your preferred prismjs theme e.g. [prism themes](https://github.com/PrismJS/prism-themes).
 
-`contentlayer.config.ts` - configuration for Contentlayer, including definition of content sources and MDX plugins used. See [Contentlayer documentation](https://www.contentlayer.dev/docs/getting-started) for more information.
+`content-collections.ts` - configuration for content collections, including definition of content sources and MDX plugins used. See the [content-collections documentation](https://www.content-collections.dev/) for more information.
 
 `components/MDXComponents.js` - pass your own JSX code or React component by specifying it over here. You can then use them directly in the `.mdx` or `.md` file. By default, a custom link, `next/image` component, table of contents component and Newsletter form are passed down. Note that the components should be default exported to avoid [existing issues with Next.js](https://github.com/vercel/next.js/issues/51593).
 
@@ -248,13 +248,13 @@ Edit the layout in `app` or content in `data`. With live reloading, the pages au
 
 ## Post
 
-Content is modelled using [Contentlayer](https://www.contentlayer.dev/), which allows you to define your own content schema and use it to generate typed content objects. See [Contentlayer documentation](https://www.contentlayer.dev/docs/getting-started) for more information.
+Content is modelled using [content-collections](https://www.content-collections.dev/), which allows you to define your own content schema and use it to generate typed content objects.
 
 ### Frontmatter
 
 Frontmatter follows [Hugo's standards](https://gohugo.io/content-management/front-matter/).
 
-Please refer to `contentlayer.config.ts` for an up to date list of supported fields. The following fields are supported:
+Please refer to `content-collections.ts` for an up to date list of supported fields. The following fields are supported:
 
 ```
 title (required)

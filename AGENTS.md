@@ -11,7 +11,7 @@ The project started from `tailwind-nextjs-starter-blog`, but it now has custom h
 - **Framework**: Next.js 16.1.6 (App Router)
 - **React**: 19.2.4
 - **Styling**: Tailwind CSS 4.2.1
-- **Content**: contentlayer2 0.5.8 (MDX support)
+- **Content**: content-collections + MDX
 - **Animation**: motion (framer-motion fork) 12.36.0
 - **WebGL**: ogl 1.0.11 (for Particles component)
 - **Package Manager**: pnpm (required)
@@ -205,4 +205,4 @@ summary: 'Brief summary'
 ---
 ```
 
-After adding or modifying content, you may need to restart the dev server for contentlayer to regenerate types.
+After adding or modifying content, restart the dev server if `content-collections` does not pick up the new generated types immediately.

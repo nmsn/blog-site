@@ -45,3 +45,6 @@ yarn-error.log*
 
 # Contentlayer
 .contentlayer
+
+# Content Collections
+.content-collections

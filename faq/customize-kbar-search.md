@@ -11,8 +11,8 @@ Add a `SearchProvider` component such as the one shown below and use it in place
 
 import { KBarSearchProvider } from 'pliny/search/KBar'
 import { useRouter } from 'next/navigation'
-import { CoreContent } from 'pliny/utils/contentlayer'
-import { Blog } from 'contentlayer/generated'
+import { CoreContent } from '@/lib/content'
+import type { Post } from '@/lib/content/collections'
 
 export const SearchProvider = ({ children }) => {
   const router = useRouter()
@@ -39,7 +39,7 @@ export const SearchProvider = ({ children }) => {
           },
         ],
         onSearchDocumentsLoad(json) {
-          return json.map((post: CoreContent<Blog>) => ({
+          return json.map((post: CoreContent<Post>) => ({
             id: post.path,
             name: post.title,
             keywords: post?.summary || '',
@@ -56,7 +56,7 @@ export const SearchProvider = ({ children }) => {
 }
 ```
 
-You can even choose to do a full text search over the entire generated blog content though this would come at the expense of a larger search index file by modifying the `createSearchIndex` function in `contentlayer.config.ts` to:
+You can even choose to do a full text search over the entire generated blog content though this would come at the expense of a larger search index file by modifying the `createSearchIndex` function in `content-collections.ts` to:
 
 ```tsx
 function createSearchIndex(allBlogs) {
@@ -79,7 +79,7 @@ Next, in the modified `SearchProvider`, dump the raw content to the `keywords` f
 
 ```tsx
 onSearchDocumentsLoad(json) {
-  return json.map((post: Blog) => ({
+  return json.map((post: Post) => ({
     id: post.path,
     name: post.title,
     keywords: post.body.raw,

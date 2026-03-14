@@ -70,13 +70,20 @@ function ShellPreviewSkeleton() {
 export default function HomeHero() {
   const router = useRouter()
   const [transitioning, setTransitioning] = useState(false)
-  const [returning, setReturning] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.sessionStorage.getItem('home-entry') === '1'
-  })
+  const [returning, setReturning] = useState(false)
   const [targetHref, setTargetHref] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   const logoTarget = useMemo(() => '/blog', [])
+
+  useEffect(() => {
+    // 检查是否从 shell 返回
+    const isReturning = window.sessionStorage.getItem('home-entry') === '1'
+    if (isReturning) {
+      setReturning(true)
+    }
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     shellLinks.forEach((link) => {

@@ -6,7 +6,7 @@ import globals from 'globals'
 /** @type {import('eslint').Linter.Config[]} */
 const config = [
   {
-    ignores: ['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.contentlayer/**'],
+    ignores: ['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.content-collections/**'],
   },
   js.configs.recommended,
   {
