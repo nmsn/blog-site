@@ -47,10 +47,10 @@ export default function Footer() {
           <div>{siteMetadata.author}</div>
           <div>{` • `}</div>
           <div>{`© ${new Date().getFullYear()}`}</div>
-          <div>{` • `}</div>
+          {/* <div>{` • `}</div>
           <Link href="/" className="text-white/78 transition-colors hover:text-white">
             {siteMetadata.title}
-          </Link>
+          </Link> */}
         </div>
       </div>
     </footer>

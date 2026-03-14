@@ -48,3 +48,7 @@ yarn-error.log*
 
 # Content Collections
 .content-collections
+
+# TypeScript
+next-env.d.ts
+*.tsbuildinfo
