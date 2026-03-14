@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useEffect, useMemo, useState, startTransition } from 'react'
 import Header from '../../app/(home)/Header'
+import { motion } from 'motion/react'
 
 const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.href !== '/travel')
 
@@ -70,15 +71,17 @@ function ShellPreviewSkeleton() {
 export default function HomeHero() {
   const router = useRouter()
   const [transitioning, setTransitioning] = useState(false)
+  const [returning] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const isReturning = window.sessionStorage.getItem('home-entry') === '1'
+    if (isReturning) {
+      window.sessionStorage.removeItem('home-entry')
+    }
+    return isReturning
+  })
   const [targetHref, setTargetHref] = useState<string | null>(null)
 
   const logoTarget = useMemo(() => '/blog', [])
-
-  useEffect(() => {
-    if (window.sessionStorage.getItem('home-entry') === '1') {
-      window.sessionStorage.removeItem('home-entry')
-    }
-  }, [])
 
   useEffect(() => {
     shellLinks.forEach((link) => {
@@ -170,10 +173,14 @@ export default function HomeHero() {
           <div className="relative flex w-full max-w-5xl flex-1 flex-col items-center justify-center">
             <div className="h-[min(46vw,420px)] md:h-[min(48vw,460px)]" />
 
-            <nav
-              className={`mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 transition-all duration-500 ease-[cubic-bezier(0.77,0,0.18,1)] md:mt-24 ${
-                transitioning ? 'translate-y-6 opacity-0' : 'translate-y-0 opacity-100'
-              }`}
+            <motion.nav
+              className="mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 md:mt-24"
+              initial={returning ? { y: 16, opacity: 0 } : false}
+              animate={{
+                y: transitioning ? 24 : 0,
+                opacity: transitioning ? 0 : 1,
+              }}
+              transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1] }}
             >
               {shellLinks.map((link) => (
                 <button
@@ -185,15 +192,21 @@ export default function HomeHero() {
                   {link.title}
                 </button>
               ))}
-            </nav>
+            </motion.nav>
           </div>
         </main>
 
-        <div
-          className={`relative z-10 transition-opacity duration-300 ${transitioning ? 'opacity-0' : 'opacity-100'}`}
+        <motion.div
+          className="relative z-10"
+          initial={returning ? { y: 16, opacity: 0 } : false}
+          animate={{
+            y: transitioning ? 32 : 0,
+            opacity: transitioning ? 0 : 1,
+          }}
+          transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1], delay: returning ? 0.1 : 0 }}
         >
           <Footer />
-        </div>
+        </motion.div>
       </div>
     </div>
   )
