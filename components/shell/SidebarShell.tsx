@@ -61,11 +61,6 @@ export default function SidebarShell({
         <div className="mt-8 md:mt-10">
           <ShellNav />
         </div>
-
-        <p className="mt-auto max-w-[220px] pt-10 text-xs leading-7 tracking-[0.03em] text-white/46">
-          The homepage hero becomes a permanent navigation edge. Content changes on the right, while
-          the shell stays anchored.
-        </p>
       </div>
     </aside>
   )

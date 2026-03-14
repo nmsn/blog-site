@@ -3,6 +3,7 @@ import Tag from '@/components/Tag'
 import { slug } from 'github-slugger'
 import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'
+import PageHeader from '@/components/shell/PageHeader'
 
 export const metadata = genPageMetadata({ title: 'Tags', description: 'Things I blog about' })
 
@@ -12,16 +13,12 @@ export default async function Page() {
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
   return (
     <div className="mx-auto w-full max-w-5xl pb-14 md:pb-20">
-      <div className="pb-8">
-        <div className="text-[11px] tracking-[0.14em] text-black/45 uppercase">Index</div>
-        <h1 className="mt-3 text-4xl leading-none font-semibold tracking-tight text-[#0d1a27] md:text-6xl">
-          Tags
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-black/60 md:text-base">
-          Browse writing by topic without leaving the shell. The content area scrolls on its own so
-          the overall frame stays pinned to the viewport.
-        </p>
-      </div>
+      <PageHeader
+        label="Index"
+        title="Tags"
+        description="Browse writing by topic without leaving the shell. The content area scrolls on its own so the overall frame stays pinned to the viewport."
+        className="pb-8"
+      />
 
       <div className="border border-black/6 bg-white/34 px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm md:px-7 md:py-7">
         <div className="flex flex-wrap gap-x-5 gap-y-3">

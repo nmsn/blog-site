@@ -9,6 +9,7 @@ import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import tagData from 'app/tag-data.json'
+import PageHeader from '@/components/shell/PageHeader'
 
 interface PaginationProps {
   totalPages: number
@@ -81,16 +82,7 @@ export default function ListLayoutWithTags({
 
   return (
     <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
-      <div className="pb-8">
-        <div className="text-[11px] tracking-[0.14em] text-black/45 uppercase">Journal</div>
-        <h1 className="mt-3 text-4xl leading-none font-semibold tracking-tight text-[#0d1a27] md:text-6xl">
-          {title}
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-black/60 md:text-base">
-          Thoughts, experiments, release notes, and ideas in progress. The sidebar stays fixed so
-          the reading area can shift without losing orientation.
-        </p>
-      </div>
+      <PageHeader label="Journal" title={title} className="pb-8" />
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <aside className="hidden lg:block lg:w-[260px] lg:flex-none">
