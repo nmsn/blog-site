@@ -18,7 +18,7 @@ export default function ShellParticles() {
         cameraDistance={18}
         className="!absolute !h-full !w-full"
       />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(39,166,222,0.14),transparent_42%),linear-gradient(180deg,transparent,rgba(39,166,222,0.08))]" />
+      <div className="pointer-events-none absolute inset-0" />
     </div>
   )
 }

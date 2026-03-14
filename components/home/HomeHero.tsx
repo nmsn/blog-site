@@ -87,11 +87,11 @@ export default function HomeHero() {
           alphaParticles={true}
           className="!absolute !h-full !w-full"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(39,166,222,0.18),transparent_40%),linear-gradient(180deg,transparent,rgba(39,166,222,0.08))]" />
+        <div className="absolute inset-0" />
       </div>
 
       <div
-        className={`pointer-events-none absolute inset-y-0 right-0 z-0 hidden overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,0.38),rgba(255,255,255,0.18))] opacity-0 backdrop-blur-[8px] transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block ${
+        className={`pointer-events-none absolute inset-y-0 right-0 z-0 hidden overflow-hidden opacity-0 backdrop-blur-[8px] transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block ${
           shellPreview
             ? 'left-[336px] translate-x-0 opacity-100 delay-200'
             : 'left-full translate-x-24'

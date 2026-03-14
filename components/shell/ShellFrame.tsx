@@ -46,7 +46,7 @@ export default function ShellFrame({ children }: { children: ReactNode }) {
           isEntering ? 'translate-x-24 opacity-0' : 'translate-x-0 opacity-100 delay-200'
         )}
       >
-        <div className="sticky top-0 z-30 -mx-5 -mt-8 mb-6 px-5 py-5 backdrop-blur-md md:-mx-10 md:-mt-11 md:mb-8 md:px-10 md:py-7">
+        <div className="sticky top-0 z-30 mb-6 backdrop-blur-md md:mb-8">
           <HeaderActions showMobileNav />
         </div>
         <ShellContentTransition>{children}</ShellContentTransition>
