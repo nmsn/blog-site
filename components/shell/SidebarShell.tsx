@@ -9,9 +9,11 @@ import { cn } from '@/lib/utils'
 export default function SidebarShell({
   entering = false,
   onRequestHome,
+  onNavigate,
 }: {
   entering?: boolean
   onRequestHome?: () => void
+  onNavigate?: (href: string) => void
 }) {
   return (
     <aside
@@ -59,7 +61,7 @@ export default function SidebarShell({
         </button>
 
         <div className="mt-8 md:mt-10">
-          <ShellNav />
+          <ShellNav onNavigate={onNavigate} />
         </div>
       </div>
     </aside>

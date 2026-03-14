@@ -1,13 +1,12 @@
 'use client'
 
-import Link from '@/components/Link'
 import headerNavLinks from '@/data/headerNavLinks'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.href !== '/travel')
 
-export default function ShellNav() {
+export default function ShellNav({ onNavigate }: { onNavigate?: (href: string) => void }) {
   const pathname = usePathname()
 
   return (
@@ -16,11 +15,12 @@ export default function ShellNav() {
         const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`)
 
         return (
-          <Link
+          <button
             key={link.href}
-            href={link.href}
+            type="button"
+            onClick={() => onNavigate?.(link.href)}
             className={cn(
-              'relative text-sm font-medium tracking-[0.02em] text-white/62 transition duration-200 hover:text-white',
+              'relative cursor-pointer bg-transparent text-left text-sm font-medium tracking-[0.02em] text-white/62 transition duration-200 hover:text-white',
               isActive && 'text-white'
             )}
           >
@@ -31,7 +31,7 @@ export default function ShellNav() {
                 isActive ? 'scale-x-100' : 'scale-x-0'
               )}
             />
-          </Link>
+          </button>
         )
       })}
     </nav>
