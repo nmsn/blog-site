@@ -86,7 +86,7 @@ export default function ListLayoutWithTags({
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <aside className="hidden lg:block lg:w-[260px] lg:flex-none">
-          <div className="sticky top-6 max-h-[calc(100dvh-7rem)] overflow-auto border border-black/6 bg-white/36 px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm [scrollbar-color:rgba(13,26,39,0.12)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-track]:bg-transparent">
+          <div className="sticky top-6 max-h-[calc(100dvh-7rem)] overflow-auto border border-black/12 bg-white px-5 py-5 [scrollbar-color:rgba(0,0,0,0.12)_transparent] [scrollbar-width:thin] dark:border-white/15 dark:bg-black dark:[scrollbar-color:rgba(255,255,255,0.14)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/10 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent">
             <div className="px-1">
               {pathname.startsWith('/blog') ? (
                 <h3 className="text-primary-500 text-xs font-bold tracking-[0.12em] uppercase">
@@ -95,7 +95,7 @@ export default function ListLayoutWithTags({
               ) : (
                 <Link
                   href="/blog"
-                  className="text-xs font-bold tracking-[0.12em] text-black/70 uppercase transition-colors duration-200 hover:text-[#27A6DE]"
+                  className="text-xs font-bold tracking-[0.12em] text-black/72 uppercase transition-colors duration-200 hover:text-[#27A6DE] dark:text-white/72"
                 >
                   All Posts
                 </Link>
@@ -113,7 +113,7 @@ export default function ListLayoutWithTags({
                       ) : (
                         <Link
                           href={`/tags/${slug(tag)}`}
-                          className="px-3 py-2 text-sm font-medium text-black/52 uppercase transition-colors duration-200 hover:text-[#27A6DE]"
+                          className="px-3 py-2 text-sm font-medium text-black/66 uppercase transition-colors duration-200 hover:text-[#27A6DE] dark:text-white/66"
                           aria-label={`View posts tagged ${tag}`}
                         >
                           {`${tag} (${tagCounts[tag]})`}
@@ -128,7 +128,7 @@ export default function ListLayoutWithTags({
         </aside>
 
         <div className="min-w-0 flex-1 pb-4">
-          <ul className="divide-y divide-black/8">
+          <ul className="divide-y divide-black/10 dark:divide-white/12">
             {displayPosts.map((post) => {
               const { path, date, title, summary, tags } = post
 
@@ -137,7 +137,7 @@ export default function ListLayoutWithTags({
                   <article className="flex flex-col gap-3 xl:gap-4">
                     <dl>
                       <dt className="sr-only">Published on</dt>
-                      <dd className="text-sm leading-6 font-medium tracking-[0.04em] text-black/44 uppercase">
+                      <dd className="text-sm leading-6 font-medium tracking-[0.04em] text-black/55 uppercase dark:text-white/55">
                         <time dateTime={date} suppressHydrationWarning>
                           {formatDate(date, siteMetadata.locale)}
                         </time>
@@ -146,7 +146,7 @@ export default function ListLayoutWithTags({
 
                     <div className="space-y-3">
                       <div>
-                        <h2 className="text-3xl leading-tight font-semibold tracking-tight text-[#102131]">
+                        <h2 className="text-3xl leading-tight font-semibold tracking-tight text-black dark:text-white">
                           <Link
                             href={`/${path}`}
                             className="transition-colors duration-200 hover:text-[#27A6DE]"
@@ -161,7 +161,9 @@ export default function ListLayoutWithTags({
                         </div>
                       </div>
 
-                      <div className="prose max-w-none text-black/62">{summary}</div>
+                      <div className="prose max-w-none text-black/72 dark:text-white/72">
+                        {summary}
+                      </div>
                     </div>
                   </article>
                 </li>

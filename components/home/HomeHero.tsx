@@ -1,6 +1,6 @@
 'use client'
 
-import Footer from '@/components/Footer'
+import Footer from '../../app/(home)/Footer'
 import Particles from '@/components/ui/Particles'
 import { WobbleContent } from '@/components/ui/WobbleContent'
 import headerNavLinks from '@/data/headerNavLinks'
@@ -71,7 +71,7 @@ export default function HomeHero() {
   const shellPreview = transitioning || returning
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#f5f0e8] text-black">
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-white text-black dark:bg-black dark:text-white">
       <div
         className={`pointer-events-none absolute inset-0 z-0 bg-[#07131f] transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
           shellPreview
@@ -91,7 +91,7 @@ export default function HomeHero() {
       </div>
 
       <div
-        className={`pointer-events-none absolute inset-y-0 right-0 z-0 hidden overflow-hidden opacity-0 backdrop-blur-[8px] transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block ${
+        className={`pointer-events-none absolute inset-y-0 right-0 z-0 hidden overflow-hidden bg-white opacity-0 transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block dark:bg-black ${
           shellPreview
             ? 'left-[336px] translate-x-0 opacity-100 delay-200'
             : 'left-full translate-x-24'

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logo Sidebar Transition Demo</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #07131f;
+      --text: #f5fbff;
+      --body: #1c2a38;
+      --ease: cubic-bezier(0.77, 0, 0.18, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(39, 166, 222, 0.1), transparent 35%),
+        linear-gradient(180deg, #fbf7f1 0%, var(--bg) 100%);
+      color: var(--body);
+    }
+
+    body { overflow: hidden; }
+
+    .scene {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+      background: linear-gradient(135deg, rgba(255,255,255,.76), rgba(255,255,255,.42));
+    }
+
+    .particle-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(9, 20, 34, 0.95), rgba(7, 19, 31, 0.98)),
+        radial-gradient(circle at 30% 20%, rgba(39, 166, 222, 0.18), transparent 30%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      transition: width 1s var(--ease), clip-path 1s var(--ease), box-shadow 1s var(--ease);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .scene.entering .particle-layer,
+    .scene.docs .particle-layer {
+      width: 320px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 56px) 100%, 0 100%);
+      box-shadow: inset -1px 0 0 rgba(255,255,255,.06), 24px 0 80px rgba(7, 19, 31, 0.18);
+    }
+
+    .scene.exiting .particle-layer {
+      transition-duration: 1.08s;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    #particles {
+      width: 100%;
+      height: 100%;
+      display: block;
+      opacity: .92;
+    }
+
+    .panel-glow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(39,166,222,.18), transparent 40%),
+        linear-gradient(180deg, transparent, rgba(39,166,222,.08));
+      mix-blend-mode: screen;
+    }
+
+    .logo-button {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      top: 50%;
+      width: min(44vw, 380px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -56%);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      transition: left .95s var(--ease), top .95s var(--ease), width .95s var(--ease), transform .95s var(--ease);
+    }
+
+    .scene.entering .logo-button,
+    .scene.docs .logo-button {
+      left: 34px;
+      top: 28px;
+      width: 112px;
+      transform: translate(0, 0);
+    }
+
+    .logo-button img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .hero-nav {
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      top: calc(50% + 170px);
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      transform: translateX(-50%);
+      transition:
+        opacity .42s ease,
+        transform .6s var(--ease);
+    }
+
+    .scene.entering .hero-nav,
+    .scene.docs .hero-nav {
+      opacity: 0;
+      transform: translate(-50%, 18px);
+      pointer-events: none;
+    }
+
+    .hero-nav a,
+    .sidebar-nav a {
+      position: relative;
+      color: rgba(255,255,255,.86);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      transition: color .2s ease, transform .2s ease, opacity .45s ease;
+    }
+
+    .hero-nav a:hover,
+    .sidebar-nav a:hover { color: #fff; }
+
+    .hero-nav a::after,
+    .sidebar-nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left center;
+      opacity: .6;
+      transition: transform .25s ease;
+    }
+
+    .hero-nav a:hover::after,
+    .sidebar-nav a:hover::after { transform: scaleX(1); }
+
+    .sidebar-nav {
+      position: absolute;
+      z-index: 3;
+      left: 34px;
+      top: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      pointer-events: none;
+    }
+
+    .sidebar-nav a {
+      color: rgba(245, 251, 255, .72);
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateX(-34px);
+    }
+
+    .scene.entering .sidebar-nav,
+    .scene.docs .sidebar-nav {
+      pointer-events: auto;
+    }
+
+    .scene.entering .sidebar-nav a,
+    .scene.docs .sidebar-nav a {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        color .2s ease,
+        transform .7s var(--ease),
+        opacity .48s ease;
+    }
+
+    .scene.entering .sidebar-nav a:nth-child(1),
+    .scene.docs .sidebar-nav a:nth-child(1) { transition-delay: .26s; }
+    .scene.entering .sidebar-nav a:nth-child(2),
+    .scene.docs .sidebar-nav a:nth-child(2) { transition-delay: .34s; }
+    .scene.entering .sidebar-nav a:nth-child(3),
+    .scene.docs .sidebar-nav a:nth-child(3) { transition-delay: .42s; }
+    .scene.entering .sidebar-nav a:nth-child(4),
+    .scene.docs .sidebar-nav a:nth-child(4) { transition-delay: .5s; }
+
+    .hero-copy {
+      position: absolute;
+      left: 50%;
+      top: calc(50% + 188px);
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: rgba(255,255,255,.7);
+      transition: opacity .35s ease, transform .7s var(--ease);
+    }
+
+    .scene.entering .hero-copy,
+    .scene.docs .hero-copy {
+      opacity: 0;
+      transform: translate(-50%, -20%);
+      pointer-events: none;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy span {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,.48);
+    }
+
+    .main-panel {
+      position: absolute;
+      inset: 0 0 0 336px;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+      padding: 44px 40px 40px;
+      background: linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.5));
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateX(96px);
+      transition: opacity .38s ease, transform .85s var(--ease);
+    }
+
+    .scene.entering .main-panel,
+    .scene.docs .main-panel {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: .46s;
+    }
+
+    .scene.exiting .main-panel {
+      opacity: 0;
+      transform: translateX(110px);
+      transition-duration: .28s, .48s;
+      transition-delay: 0s;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(28,42,56,.48);
+    }
+
+    .main-panel h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: .95;
+      max-width: 10ch;
+      color: #0d1a27;
+    }
+
+    .main-panel p {
+      margin: 0;
+      max-width: 56ch;
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(28,42,56,.78);
+    }
+
+    .card {
+      min-height: 160px;
+      padding: 22px;
+      background: rgba(255,255,255,.68);
+      border: 1px solid rgba(28,42,56,.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+    }
+
+    .hint {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      z-index: 5;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(7, 19, 31, 0.08);
+      color: rgba(16,33,49,.6);
+      font-size: 12px;
+      letter-spacing: .04em;
+      backdrop-filter: blur(8px);
+    }
+
+    @media (max-width: 920px) {
+      .scene.entering .particle-layer,
+      .scene.docs .particle-layer {
+        width: 100%;
+        height: 236px;
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 42px), 0 100%);
+      }
+
+      .scene.entering .logo-button,
+      .scene.docs .logo-button {
+        left: 22px;
+        top: 22px;
+        width: 96px;
+      }
+
+      .hero-nav {
+        gap: 18px;
+      }
+
+      .sidebar-nav {
+        left: 22px;
+        top: 122px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px 18px;
+      }
+
+      .main-panel {
+        inset: 214px 0 0 0;
+        padding: 24px 18px 28px;
+      }
+
+      .hint {
+        left: 18px;
+        right: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene" id="scene">
+    <div class="particle-layer">
+      <canvas id="particles"></canvas>
+      <div class="panel-glow"></div>
+    </div>
+
+    <button class="logo-button" id="logoToggle" aria-label="Toggle layout transition">
+      <img src="./public/logo.svg" alt="Logo" />
+    </button>
+
+    <div class="hero-copy">
+      <p>Click the logo to morph the nav as one moving group</p>
+      <span>The center nav fades away, while the sidebar links arrive from the edge.</span>
+    </div>
+
+    <nav class="hero-nav" aria-label="Hero Navigation">
+      <a href="#about">About</a>
+      <a href="#blog">Blog</a>
+      <a href="#notes">Notes</a>
+      <a href="#projects">Projects</a>
+    </nav>
+
+    <nav class="sidebar-nav" aria-label="Sidebar Navigation">
+      <a href="#about">About</a>
+      <a href="#blog">Blog</a>
+      <a href="#notes">Notes</a>
+      <a href="#projects">Projects</a>
+    </nav>
+
+    <section class="main-panel" aria-label="Preview content">
+      <span class="eyebrow">Sidebar Reveal Version</span>
+      <h1>The navigation disappears at center, then arrives from the sidebar edge.</h1>
+      <p>
+        This version keeps the dramatic background sweep and content reveal, but gives the navigation a cleaner
+        transition: the centered links leave the stage first, then the sidebar links slide in from outside.
+      </p>
+      <article class="card">
+        The result is less morph-like and more editorial. It reads clearly, and it avoids the awkwardness of
+        forcing a horizontal nav to physically bend into a vertical list.
+      </article>
+    </section>
+
+    <div class="hint">Click the logo to compare the follow-nav transition</div>
+  </main>
+
+  <script>
+    const scene = document.getElementById('scene')
+    const toggle = document.getElementById('logoToggle')
+    const canvas = document.getElementById('particles')
+    const ctx = canvas.getContext('2d')
+    const particles = []
+    const particleCount = 110
+    let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false }
+    let isDocs = false
+    let transitionTimer = null
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
+      canvas.style.width = `${window.innerWidth}px`
+      canvas.style.height = `${window.innerHeight}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+
+    function createParticles() {
+      particles.length = 0
+      for (let i = 0; i < particleCount; i += 1) {
+        particles.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          vx: (Math.random() - 0.5) * 0.55,
+          vy: (Math.random() - 0.5) * 0.55,
+          size: Math.random() * 2.2 + 0.8,
+          alpha: Math.random() * 0.6 + 0.2,
+        })
+      }
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+      const showSidebarPalette = scene.classList.contains('docs') || scene.classList.contains('entering')
+
+      for (const particle of particles) {
+        particle.x += particle.vx
+        particle.y += particle.vy
+
+        if (particle.x < -20) particle.x = window.innerWidth + 20
+        if (particle.x > window.innerWidth + 20) particle.x = -20
+        if (particle.y < -20) particle.y = window.innerHeight + 20
+        if (particle.y > window.innerHeight + 20) particle.y = -20
+
+        const dx = pointer.x - particle.x
+        const dy = pointer.y - particle.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (pointer.active && distance < 140) {
+          const force = (140 - distance) / 140
+          particle.x -= dx * force * 0.008
+          particle.y -= dy * force * 0.008
+        }
+
+        ctx.beginPath()
+        ctx.fillStyle = showSidebarPalette
+          ? `rgba(39, 166, 222, ${particle.alpha})`
+          : `rgba(255, 255, 255, ${particle.alpha * 0.9})`
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      requestAnimationFrame(drawParticles)
+    }
+
+    function clearTransitionState() {
+      scene.classList.remove('entering', 'exiting')
+      if (transitionTimer) {
+        clearTimeout(transitionTimer)
+        transitionTimer = null
+      }
+    }
+
+    toggle.addEventListener('click', () => {
+      clearTransitionState()
+
+      if (!isDocs) {
+        scene.classList.add('entering')
+        transitionTimer = setTimeout(() => {
+          scene.classList.remove('entering')
+          scene.classList.add('docs')
+          isDocs = true
+          transitionTimer = null
+        }, 1080)
+        return
+      }
+
+      scene.classList.add('exiting')
+      scene.classList.remove('docs')
+      transitionTimer = setTimeout(() => {
+        scene.classList.remove('exiting')
+        isDocs = false
+        transitionTimer = null
+      }, 1120)
+    })
+
+    window.addEventListener('mousemove', (event) => {
+      pointer = { x: event.clientX, y: event.clientY, active: true }
+    })
+
+    window.addEventListener('mouseleave', () => {
+      pointer.active = false
+    })
+
+    window.addEventListener('resize', () => {
+      resizeCanvas()
+      createParticles()
+    })
+
+    resizeCanvas()
+    createParticles()
+    drawParticles()
+  </script>
+</body>
+</html>

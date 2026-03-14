@@ -20,15 +20,17 @@ export default async function Page() {
         className="pb-8"
       />
 
-      <div className="border border-black/6 bg-white/34 px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm md:px-7 md:py-7">
+      <div className="border border-black/12 bg-white px-5 py-6 md:px-7 md:py-7 dark:border-white/15 dark:bg-black">
         <div className="flex flex-wrap gap-x-5 gap-y-3">
-          {tagKeys.length === 0 && <span className="text-sm text-black/55">No tags found.</span>}
+          {tagKeys.length === 0 && (
+            <span className="text-sm text-black/72 dark:text-white/72">No tags found.</span>
+          )}
           {sortedTags.map((t) => (
             <div key={t} className="flex items-center gap-1.5">
               <Tag text={t} />
               <Link
                 href={`/tags/${slug(t)}`}
-                className="text-sm font-semibold text-black/58 uppercase transition-colors duration-200 hover:text-[#27A6DE]"
+                className="text-sm font-semibold text-black/72 uppercase transition-colors duration-200 hover:text-[#27A6DE] dark:text-white/72"
                 aria-label={`View posts tagged ${t}`}
               >
                 {`(${tagCounts[t]})`}

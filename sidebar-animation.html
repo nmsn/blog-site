@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyDocs</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e5e0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #e8e5e0;
+    }
+
+    /* ── 深色背景面板 ── */
+    .bg-panel {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      background: #0f172a;
+      z-index: 2;
+    }
+    .scene.home .bg-panel {
+      width: 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    .scene.to-docs .bg-panel,
+    .scene.docs .bg-panel {
+      width: 260px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 44px) 100%, 0 100%);
+    }
+    .scene.to-home .bg-panel {
+      width: 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    .scene.to-docs .bg-panel,
+    .scene.to-home .bg-panel {
+      transition: width .75s cubic-bezier(.77, 0, .18, 1),
+                  clip-path .75s cubic-bezier(.77, 0, .18, 1);
+    }
+
+    /* ── 站点标题（动画主角） ── */
+    .site-title {
+      position: absolute;
+      z-index: 10;
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+    .scene.home .site-title {
+      font-size: 40px;
+      letter-spacing: -.5px;
+      top: calc(50% - 80px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .scene.to-docs .site-title,
+    .scene.docs .site-title {
+      font-size: 15px;
+      letter-spacing: .2px;
+      top: 24px;
+      left: 24px;
+      transform: translateX(0);
+    }
+    .scene.to-home .site-title {
+      font-size: 40px;
+      letter-spacing: -.5px;
+      top: calc(50% - 80px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .scene.to-docs .site-title,
+    .scene.to-home .site-title {
+      transition: top .7s cubic-bezier(.77, 0, .18, 1),
+                  left .7s cubic-bezier(.77, 0, .18, 1),
+                  font-size .7s cubic-bezier(.77, 0, .18, 1),
+                  letter-spacing .7s cubic-bezier(.77, 0, .18, 1),
+                  transform .7s cubic-bezier(.77, 0, .18, 1);
+    }
+
+    /* ── 首页中央内容 ── */
+    .hero-center {
+      position: absolute;
+      z-index: 10;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    .hero-sub {
+      font-size: 14px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 52px;
+      margin-bottom: 24px;
+      white-space: nowrap;
+      transition: opacity .25s ease, transform .3s ease;
+    }
+    .enter-btn {
+      padding: 10px 26px;
+      background: #fff;
+      color: #0f172a;
+      border: none;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: background .15s, opacity .2s ease, transform .25s ease;
+    }
+    .enter-btn:hover { background: #e2e8f0; }
+
+    .scene.to-docs .hero-center,
+    .scene.docs .hero-center { pointer-events: none; }
+
+    .scene.to-docs .hero-sub,
+    .scene.docs .hero-sub {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .2s ease, transform .25s ease;
+    }
+    .scene.to-docs .enter-btn,
+    .scene.docs .enter-btn {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: opacity .2s ease, transform .25s ease;
+    }
+    .scene.to-home .hero-sub {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .3s ease .4s, transform .3s ease .4s;
+    }
+    .scene.to-home .enter-btn {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      transition: opacity .3s ease .45s, transform .3s ease .45s;
+    }
+
+    /* ── 侧边栏导航 ── */
+    .sidebar-nav {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 260px;
+      z-index: 5;
+      padding: 60px 16px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+    .scene.docs .sidebar-nav { pointer-events: auto; }
+
+    .nav-section { margin-bottom: 16px; }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, .28);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin: 0 0 5px;
+    }
+    .nav-item {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .52);
+      padding: 4px 0;
+      cursor: pointer;
+      display: block;
+      transition: color .15s;
+    }
+    .nav-item:hover { color: rgba(255, 255, 255, .9); }
+    .nav-item.active { color: #fff; font-weight: 500; }
+
+    .nav-fade {
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity .01s, transform .01s;
+    }
+    .scene.docs .nav-fade {
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity .35s ease .55s, transform .35s ease .55s;
+    }
+    .scene.to-home .nav-fade {
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .back-btn {
+      margin-top: auto;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .28);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      padding: 0;
+      opacity: 0;
+      transition: opacity .01s, color .15s;
+    }
+    .scene.docs .back-btn {
+      opacity: 1;
+      transition: opacity .35s ease .55s, color .15s;
+    }
+    .scene.to-home .back-btn {
+      opacity: 0;
+      transition: opacity .15s ease;
+    }
+    .back-btn:hover { color: rgba(255, 255, 255, .6); }
+
+    /* ── 主内容区 ── */
+    .main-content {
+      position: absolute;
+      top: 0; left: 260px; right: 0; bottom: 0;
+      padding: 40px 36px;
+      z-index: 1;
+      opacity: 0;
+      transform: translateX(16px);
+      transition: opacity .01s, transform .01s;
+      overflow-y: auto;
+    }
+    .scene.docs .main-content {
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity .4s ease .52s, transform .4s ease .52s;
+    }
+    .scene.to-home .main-content {
+      opacity: 0;
+      transform: translateX(16px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+    .page-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 560px;
+    }
+    .code-block {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 18px 20px;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #e2e8f0;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .code-block .kw  { color: #93c5fd; }
+    .code-block .str { color: #86efac; }
+    .code-block .fn  { color: #fde68a; }
+    .code-block .cmt { color: #64748b; }
+    .section-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+    .para {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      max-width: 560px;
+    }
+
+    /* ── 提示文字 ── */
+    .hint {
+      position: absolute;
+      bottom: 20px; right: 24px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .3);
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    .scene.to-docs .hint,
+    .scene.docs .hint { opacity: 0; }
+  </style>
+</head>
+<body>
+
+<div class="scene home" id="scene">
+  <div class="bg-panel"></div>
+
+  <span class="site-title">MyDocs</span>
+
+  <div class="hero-center">
+    <p class="hero-sub">简洁、快速、类型安全的文档框架</p>
+    <button class="enter-btn" onclick="enterDocs()">进入文档 →</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-fade">
+      <div class="nav-section">
+        <p class="nav-section-label">Getting started</p>
+        <span class="nav-item active" onclick="switchPage('intro', this)">Introduction</span>
+        <span class="nav-item" onclick="switchPage('install', this)">Installation</span>
+        <span class="nav-item" onclick="switchPage('quickstart', this)">Quick start</span>
+      </div>
+      <div class="nav-section">
+        <p class="nav-section-label">Core concepts</p>
+        <span class="nav-item" onclick="switchPage('schema', this)">Schema</span>
+        <span class="nav-item" onclick="switchPage('queries', this)">Queries</span>
+        <span class="nav-item" onclick="switchPage('migrations', this)">Migrations</span>
+      </div>
+      <div class="nav-section">
+        <p class="nav-section-label">API Reference</p>
+        <span class="nav-item" onclick="switchPage('drizzle', this)">drizzle()</span>
+        <span class="nav-item" onclick="switchPage('select', this)">db.select()</span>
+      </div>
+    </div>
+    <button class="back-btn" onclick="goHome()">← 返回首页</button>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <p class="page-title">Introduction</p>
+    <p class="page-desc">Drizzle ORM is a lightweight TypeScript ORM that feels like writing SQL — with full type safety and zero runtime overhead.</p>
+    <div class="code-block"><span class="kw">import</span> { drizzle } <span class="kw">from</span> <span class="str">'drizzle-orm/postgres-js'</span>
+<span class="kw">import</span> postgres <span class="kw">from</span> <span class="str">'postgres'</span>
+
+<span class="kw">const</span> db = <span class="fn">drizzle</span>(<span class="fn">postgres</span>(process.env.<span class="fn">DATABASE_URL</span>))</div>
+    <p class="section-title">Why Drizzle?</p>
+    <p class="para">Unlike other ORMs, Drizzle gives you a SQL-like query builder that maps 1:1 to the queries being executed. No magic, no hidden N+1 issues — just transparent, predictable database access.</p>
+    <p class="para">Full TypeScript inference means your editor knows the shape of every query result without any additional type annotations.</p>
+  </div>
+
+  <p class="hint">点击「进入文档」查看动画效果</p>
+</div>
+
+<script>
+  const scene = document.getElementById('scene');
+  const mainContent = document.getElementById('main-content');
+  let state = 'home';
+
+  const pages = {
+    intro: {
+      title: 'Introduction',
+      desc: 'Drizzle ORM is a lightweight TypeScript ORM that feels like writing SQL — with full type safety and zero runtime overhead.',
+      body: `<div class="code-block"><span class="kw">import</span> { drizzle } <span class="kw">from</span> <span class="str">'drizzle-orm/postgres-js'</span>\n<span class="kw">import</span> postgres <span class="kw">from</span> <span class="str">'postgres'</span>\n\n<span class="kw">const</span> db = <span class="fn">drizzle</span>(<span class="fn">postgres</span>(process.env.<span class="fn">DATABASE_URL</span>))</div><p class="section-title">Why Drizzle?</p><p class="para">Unlike other ORMs, Drizzle gives you a SQL-like query builder that maps 1:1 to the queries being executed. No magic, no hidden N+1 issues.</p>`
+    },
+    install: {
+      title: 'Installation',
+      desc: 'Install Drizzle ORM and the appropriate driver for your database.',
+      body: `<div class="code-block"><span class="cmt"># PostgreSQL</span>\nnpm install drizzle-orm postgres\nnpm install drizzle-kit -D\n\n<span class="cmt"># SQLite</span>\nnpm install drizzle-orm better-sqlite3\n\n<span class="cmt"># MySQL</span>\nnpm install drizzle-orm mysql2</div>`
+    },
+    quickstart: {
+      title: 'Quick start',
+      desc: 'Get up and running with Drizzle in under 5 minutes.',
+      body: `<div class="code-block"><span class="cmt">// 1. Define your schema</span>\n<span class="kw">export const</span> users = <span class="fn">pgTable</span>(<span class="str">'users'</span>, {\n  id: <span class="fn">uuid</span>(<span class="str">'id'</span>).<span class="fn">defaultRandom</span>().<span class="fn">primaryKey</span>(),\n  name: <span class="fn">text</span>(<span class="str">'name'</span>),\n})\n\n<span class="cmt">// 2. Query</span>\n<span class="kw">const</span> result = <span class="kw">await</span> db.<span class="fn">select</span>().<span class="fn">from</span>(users)</div>`
+    },
+    schema: {
+      title: 'Schema',
+      desc: 'Define your database schema in TypeScript with full type inference.',
+      body: `<div class="code-block"><span class="kw">import</span> { pgTable, uuid, text, timestamp } <span class="kw">from</span> <span class="str">'drizzle-orm/pg-core'</span>\n\n<span class="kw">export const</span> posts = <span class="fn">pgTable</span>(<span class="str">'posts'</span>, {\n  id: <span class="fn">uuid</span>(<span class="str">'id'</span>).<span class="fn">defaultRandom</span>().<span class="fn">primaryKey</span>(),\n  title: <span class="fn">text</span>(<span class="str">'title'</span>).<span class="fn">notNull</span>(),\n  createdAt: <span class="fn">timestamp</span>(<span class="str">'created_at'</span>).<span class="fn">defaultNow</span>(),\n})</div>`
+    },
+    queries: {
+      title: 'Queries',
+      desc: 'Write type-safe queries that map directly to SQL.',
+      body: `<div class="code-block"><span class="cmt">// Select with filter</span>\n<span class="kw">const</span> result = <span class="kw">await</span> db\n  .<span class="fn">select</span>()\n  .<span class="fn">from</span>(users)\n  .<span class="fn">where</span>(<span class="fn">eq</span>(users.id, userId))\n\n<span class="cmt">// Insert and return</span>\n<span class="kw">const</span> [user] = <span class="kw">await</span> db\n  .<span class="fn">insert</span>(users)\n  .<span class="fn">values</span>({ name: <span class="str">'Alice'</span> })\n  .<span class="fn">returning</span>()</div>`
+    },
+    migrations: {
+      title: 'Migrations',
+      desc: 'Generate and run migrations with Drizzle Kit.',
+      body: `<div class="code-block"><span class="cmt"># Generate migration</span>\nnpx drizzle-kit generate\n\n<span class="cmt"># Push directly (dev only)</span>\nnpx drizzle-kit push\n\n<span class="cmt"># Run migrations</span>\nnpx drizzle-kit migrate</div>`
+    },
+    drizzle: {
+      title: 'drizzle()',
+      desc: 'The main entry point for creating a Drizzle database instance.',
+      body: `<div class="code-block"><span class="fn">drizzle</span>(driver, config?)\n\n<span class="cmt">// config options</span>\n{\n  schema: <span class="str">{ users, posts }</span>,  <span class="cmt">// for relational queries</span>\n  logger: <span class="kw">true</span>,              <span class="cmt">// log all SQL</span>\n}</div>`
+    },
+    select: {
+      title: 'db.select()',
+      desc: 'Build and execute SELECT queries with full type inference.',
+      body: `<div class="code-block">db.<span class="fn">select</span>().<span class="fn">from</span>(table)\n  .<span class="fn">where</span>(condition)\n  .<span class="fn">orderBy</span>(<span class="fn">desc</span>(table.createdAt))\n  .<span class="fn">limit</span>(<span class="kw">10</span>)\n  .<span class="fn">offset</span>(<span class="kw">20</span>)</div>`
+    }
+  };
+
+  function enterDocs() {
+    if (state === 'docs' || state === 'to-docs') return;
+    state = 'to-docs';
+    scene.className = 'scene to-docs';
+    setTimeout(() => {
+      scene.className = 'scene docs';
+      state = 'docs';
+    }, 800);
+  }
+
+  function goHome() {
+    if (state === 'home' || state === 'to-home') return;
+    state = 'to-home';
+    scene.className = 'scene to-home';
+    setTimeout(() => {
+      scene.className = 'scene home';
+      state = 'home';
+    }, 800);
+  }
+
+  function switchPage(id, el) {
+    const page = pages[id];
+    if (!page) return;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    mainContent.style.opacity = '0';
+    mainContent.style.transform = 'translateX(10px)';
+    setTimeout(() => {
+      mainContent.innerHTML = `<p class="page-title">${page.title}</p><p class="page-desc">${page.desc}</p>${page.body}`;
+      mainContent.style.transition = 'opacity .25s ease, transform .25s ease';
+      mainContent.style.opacity = '1';
+      mainContent.style.transform = 'translateX(0)';
+    }, 150);
+  }
+</script>
+</body>
+</html>
