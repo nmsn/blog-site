@@ -1,7 +1,5 @@
 import siteMetadata from '@/data/siteMetadata'
-import MobileNav from '@/components/MobileNav'
-import ThemeSwitch from '@/components/ThemeSwitch'
-import SearchButton from '@/components/SearchButton'
+import HeaderActions from '@/components/HeaderActions'
 
 const Header = () => {
   let headerClass =
@@ -12,9 +10,7 @@ const Header = () => {
 
   return (
     <header className={headerClass}>
-      <SearchButton />
-      <ThemeSwitch />
-      <MobileNav />
+      <HeaderActions showMobileNav />
     </header>
   )
 }
