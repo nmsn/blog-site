@@ -57,7 +57,12 @@ export default function HomeHero({ children }: HomeHeroProps) {
 
   const beginTransition = (href: string) => {
     if (transitioning) return
-    window.sessionStorage.setItem('shell-entry', '1')
+    // 根据目标路由设置对应的 entry 标记
+    if (href === '/') {
+      window.sessionStorage.setItem('home-entry', '1')
+    } else {
+      window.sessionStorage.setItem('shell-entry', '1')
+    }
     setTargetHref(href)
     setTransitioning(true)
   }
