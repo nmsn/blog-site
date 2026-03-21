@@ -23,14 +23,27 @@ export default function HomeNav({ transitioning, returning, onNavigate }: HomeNa
       transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1] }}
     >
       {shellLinks.map((link) => (
-        <button
+        <motion.button
           key={link.href}
           type="button"
           onClick={() => onNavigate(link.href)}
-          className="m-1 cursor-pointer bg-transparent font-medium text-white/88 transition-colors duration-200 hover:text-white"
+          className="group relative m-1 cursor-pointer bg-transparent font-medium text-white/88 transition-colors duration-200 hover:text-white"
+          whileHover="hover"
+          initial="initial"
         >
-          {link.title}
-        </button>
+          <span className="relative">
+            {link.title}
+            <motion.span
+              className="absolute inset-x-0 bottom-0 h-px bg-white"
+              variants={{
+                initial: { scaleX: 0 },
+                hover: { scaleX: 1 },
+              }}
+              style={{ transformOrigin: 'left' }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            />
+          </span>
+        </motion.button>
       ))}
     </motion.nav>
   )
