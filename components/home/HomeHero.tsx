@@ -1,75 +1,27 @@
 'use client'
 
-import Footer from '../../app/(home)/Footer'
 import Particles from '@/components/ui/Particles'
 import { WobbleContent } from '@/components/ui/WobbleContent'
 import headerNavLinks from '@/data/headerNavLinks'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { useEffect, useMemo, useState, startTransition } from 'react'
 import Header from '../../app/(home)/Header'
 import { motion } from 'motion/react'
+import ShellPreviewSkeleton from './ShellPreviewSkeleton'
+import ShellSidebarNav from './ShellSidebarNav'
+import AnimatedFooter from './AnimatedFooter'
+import HomeNav from './HomeNav'
 
 const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.href !== '/travel')
 
-function ShellPreviewSkeleton() {
-  return (
-    <div className="flex h-full w-full justify-center px-6 py-8 text-black md:px-10 md:py-11 dark:text-white">
-      <div className="w-full max-w-6xl">
-        <div className="pb-8">
-          <div className="h-2.5 w-14 bg-black/6 dark:bg-white/6" />
-          <div className="mt-4 h-10 w-44 bg-black/7 md:h-14 md:w-56 dark:bg-white/7" />
-          <div className="mt-5 h-2.5 w-full max-w-xl bg-black/5 dark:bg-white/5" />
-          <div className="mt-3 h-2.5 w-full max-w-lg bg-black/5 dark:bg-white/5" />
-        </div>
-
-        <div className="flex flex-1 flex-col gap-8 md:flex-row md:gap-10">
-          <aside className="hidden md:block md:w-[220px] md:flex-none">
-            <div className="border border-black/8 bg-white/50 px-5 py-5 dark:border-white/10 dark:bg-black/40">
-              <div className="h-2.5 w-18 bg-black/6 dark:bg-white/6" />
-              <div className="mt-5 space-y-3">
-                {[86, 74, 68, 79].map((width, index) => (
-                  <div
-                    key={index}
-                    className="h-7 bg-black/5 dark:bg-white/5"
-                    style={{ width: `${width}%` }}
-                  />
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          <div className="min-w-0 flex-1">
-            {[0, 1].map((item) => (
-              <div
-                key={item}
-                className="border-t border-black/10 py-7 first:border-t-0 first:pt-0 dark:border-white/12"
-              >
-                <div className="h-2.5 w-20 bg-black/6 dark:bg-white/6" />
-                <div className="mt-4 h-7 w-full max-w-xl bg-black/7 dark:bg-white/7" />
-                <div className="mt-3 h-2.5 w-full max-w-lg bg-black/5 dark:bg-white/5" />
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {[14, 11, 9].map((width, tagIndex) => (
-                    <div
-                      key={`${item}-${tagIndex}`}
-                      className="h-4 bg-black/5 dark:bg-white/5"
-                      style={{ width: `${width}%` }}
-                    />
-                  ))}
-                </div>
-                <div className="mt-5 h-2.5 w-full max-w-2xl bg-black/5 dark:bg-white/5" />
-                <div className="mt-3 h-2.5 w-full max-w-xl bg-black/5 dark:bg-white/5" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+interface HomeHeroProps {
+  children?: React.ReactNode
 }
 
-export default function HomeHero() {
+export default function HomeHero({ children }: HomeHeroProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [transitioning, setTransitioning] = useState(false)
   const [returning] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -81,7 +33,8 @@ export default function HomeHero() {
   })
   const [targetHref, setTargetHref] = useState<string | null>(null)
 
-  const logoTarget = useMemo(() => '/blog', [])
+  const isHome = pathname === '/'
+  const logoTarget = useMemo(() => (isHome ? '/blog' : '/'), [isHome])
 
   useEffect(() => {
     shellLinks.forEach((link) => {
@@ -109,53 +62,49 @@ export default function HomeHero() {
     setTransitioning(true)
   }
 
-  const shellPreview = transitioning
+  const handleSidebarNavigate = (href: string) => {
+    router.push(href)
+  }
+
+  const enteringTransition = transitioning && isHome
+  const returningTransition = transitioning && !isHome
+  const shellPreview = (isHome && transitioning) || (!isHome && !transitioning)
+  const showContent = (isHome && transitioning) || (!isHome && !transitioning)
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-white text-black dark:bg-black dark:text-white">
+    <div className="relative flex min-h-screen w-full bg-white text-black dark:bg-black dark:text-white">
       <div
-        className={`pointer-events-none absolute inset-0 z-0 bg-[#07131f] transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
+        className={`pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#07131f] transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
           shellPreview
             ? 'w-[320px] shadow-[24px_0_80px_rgba(7,19,31,0.18)] [clip-path:polygon(0_0,100%_0,calc(100%-56px)_100%,0_100%)]'
             : 'w-full [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)]'
         }`}
       >
-        <Particles
-          particleColors={['#27A6DE', '#7AD7FF', '#D8F4FF']}
-          particleCount={500}
-          moveParticlesOnHover={true}
-          particleHoverFactor={0.7}
-          alphaParticles={true}
-          className="!absolute !h-full !w-full"
-        />
-        <div className="absolute inset-0" />
-      </div>
-
-      <div
-        className={`pointer-events-none absolute inset-y-0 right-0 z-0 hidden overflow-hidden bg-white opacity-0 transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block dark:bg-black ${
-          shellPreview
-            ? 'left-[336px] translate-x-0 opacity-100 delay-200'
-            : 'left-full translate-x-24'
-        }`}
-      >
-        <div
-          className={`h-full w-full transition-opacity duration-300 ${
-            shellPreview ? 'opacity-100 delay-300' : 'opacity-0'
-          }`}
-        >
-          <ShellPreviewSkeleton />
+        <div className="pointer-events-none absolute inset-0">
+          <Particles
+            particleColors={['#27A6DE', '#7AD7FF', '#D8F4FF']}
+            particleCount={500}
+            moveParticlesOnHover={true}
+            particleHoverFactor={0.7}
+            alphaParticles={true}
+            className="!absolute !h-full !w-full"
+          />
         </div>
       </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10 flex min-h-screen flex-1 flex-col">
         <Header />
 
         <main className="flex flex-1 flex-col items-center justify-center px-6 pb-12">
           <div
             className={`absolute top-1/2 left-1/2 z-20 w-[min(44vw,380px)] -translate-x-1/2 -translate-y-[56%] transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
-              transitioning
+              transitioning && isHome
                 ? 'top-5 left-5 w-24 translate-x-0 translate-y-0 md:top-7 md:left-8 md:w-28'
-                : ''
+                : transitioning && !isHome
+                  ? 'top-1/2 left-1/2 w-[min(44vw,380px)] -translate-x-1/2 -translate-y-[56%]'
+                  : !isHome
+                    ? 'top-5 left-5 w-24 translate-x-0 translate-y-0 md:top-7 md:left-8 md:w-28'
+                    : ''
             }`}
           >
             <WobbleContent containerClassName="max-w-[480px]">
@@ -170,43 +119,39 @@ export default function HomeHero() {
             </WobbleContent>
           </div>
 
+          <ShellSidebarNav
+            visible={shellPreview && !returningTransition}
+            onNavigate={handleSidebarNavigate}
+          />
+
           <div className="relative flex w-full max-w-5xl flex-1 flex-col items-center justify-center">
             <div className="h-[min(46vw,420px)] md:h-[min(48vw,460px)]" />
 
-            <motion.nav
-              className="mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 md:mt-24"
-              initial={returning ? { y: 16, opacity: 0 } : false}
-              animate={{
-                y: transitioning ? 24 : 0,
-                opacity: transitioning ? 0 : 1,
-              }}
-              transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1] }}
-            >
-              {shellLinks.map((link) => (
-                <button
-                  key={link.href}
-                  type="button"
-                  onClick={() => beginTransition(link.href)}
-                  className="m-1 cursor-pointer bg-transparent font-medium text-white/88 transition-colors duration-200 hover:text-white"
-                >
-                  {link.title}
-                </button>
-              ))}
-            </motion.nav>
+            <HomeNav
+              transitioning={transitioning}
+              returning={returning}
+              onNavigate={beginTransition}
+            />
           </div>
         </main>
 
-        <motion.div
-          className="relative z-10"
-          initial={returning ? { y: 16, opacity: 0 } : false}
-          animate={{
-            y: transitioning ? 32 : 0,
-            opacity: transitioning ? 0 : 1,
-          }}
-          transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1], delay: returning ? 0.1 : 0 }}
+        <AnimatedFooter transitioning={transitioning} returning={returning} />
+      </div>
+
+      <div
+        className={`pointer-events-none absolute inset-y-0 right-0 z-20 hidden overflow-hidden bg-white opacity-0 transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block dark:bg-black ${
+          showContent
+            ? 'left-[336px] translate-x-0 opacity-100 delay-200'
+            : 'left-full translate-x-24'
+        }`}
+      >
+        <div
+          className={`pointer-events-auto h-full w-full transition-opacity duration-300 ${
+            showContent ? 'opacity-100 delay-300' : 'opacity-0'
+          }`}
         >
-          <Footer />
-        </motion.div>
+          {children}
+        </div>
       </div>
     </div>
   )
