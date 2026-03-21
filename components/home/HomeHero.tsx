@@ -73,14 +73,16 @@ export default function HomeHero({ children }: HomeHeroProps) {
 
   return (
     <div className="relative flex min-h-screen w-full bg-white text-black dark:bg-black dark:text-white">
+      {/* 粒子裁剪容器：尺寸变化 + overflow-hidden + clip-path，控制粒子可见区域 */}
       <div
-        className={`pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#07131f] transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
+        className={`pointer-events-none fixed inset-0 z-10 overflow-hidden transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
           shellPreview
             ? 'w-[320px] shadow-[24px_0_80px_rgba(7,19,31,0.18)] [clip-path:polygon(0_0,100%_0,calc(100%-56px)_100%,0_100%)]'
             : 'w-full [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)]'
         }`}
       >
-        <div className="pointer-events-none absolute inset-0">
+        {/* 粒子容器：固定全屏尺寸，不随父容器变化 */}
+        <div className="fixed inset-0 z-20 h-screen w-screen">
           <Particles
             particleColors={['#27A6DE', '#7AD7FF', '#D8F4FF']}
             particleCount={500}
@@ -90,6 +92,8 @@ export default function HomeHero({ children }: HomeHeroProps) {
             className="!absolute !h-full !w-full"
           />
         </div>
+        {/* 背景色层：覆盖在粒子上方，形成深色背景效果 */}
+        <div className="pointer-events-none absolute inset-0 h-screen w-screen bg-[#07131f]" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-1 flex-col">
