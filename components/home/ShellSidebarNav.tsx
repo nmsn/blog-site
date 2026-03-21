@@ -39,16 +39,18 @@ export default function ShellSidebarNav({ visible, onNavigate }: ShellSidebarNav
               isActive ? 'text-white' : 'text-white/88 hover:text-white'
             }`}
           >
-            {link.title}
-            {isActive && (
-              <motion.span
-                className="absolute -bottom-0.5 left-0 h-px w-full bg-white/50"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                style={{ transformOrigin: 'left' }}
-              />
-            )}
+            <span className="relative">
+              {link.title}
+              {isActive && (
+                <motion.span
+                  className="absolute bottom-0 left-0 h-px w-full bg-white"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  style={{ transformOrigin: 'left' }}
+                />
+              )}
+            </span>
           </button>
         )
       })}
