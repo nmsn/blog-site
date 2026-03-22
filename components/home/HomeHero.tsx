@@ -148,7 +148,7 @@ export default function HomeHero({ children }: HomeHeroProps) {
       </div>
 
       <div
-        className={`pointer-events-none absolute inset-y-0 right-0 z-20 hidden overflow-hidden bg-white opacity-0 transition-all duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block dark:bg-black ${
+        className={`pointer-events-none absolute inset-y-0 right-0 z-20 hidden overflow-hidden bg-white opacity-0 transition-[left,transform,opacity] duration-[850ms] ease-[cubic-bezier(0.77,0,0.18,1)] md:block dark:bg-black ${
           showContent
             ? 'left-[336px] translate-x-0 opacity-100 delay-200'
             : 'left-full translate-x-24'
