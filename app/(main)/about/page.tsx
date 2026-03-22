@@ -2,7 +2,7 @@ import { allAuthors } from '@/lib/content/collections'
 import { MDXContent } from '@content-collections/mdx/react'
 import AuthorLayout from '@/layouts/AuthorLayout'
 import { genPageMetadata } from 'app/seo'
-import { components } from '@/components/MDXComponents'
+import { components } from '@/components/mdx/MDXComponents'
 import { coreContent } from '@/lib/content'
 
 export const metadata = genPageMetadata({ title: 'About' })

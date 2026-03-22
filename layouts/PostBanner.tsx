@@ -2,12 +2,12 @@ import { ReactNode } from 'react'
 import Image from '@/components/Image'
 import Bleed from 'pliny/ui/Bleed'
 import { CoreContent, CorePost } from '@/lib/content'
-import Comments from '@/components/Comments'
+import Comments from '@/components/blog/Comments'
 import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
-import ScrollTopAndComment from '@/components/ScrollTopAndComment'
+import ScrollTopAndComment from '@/components/blog/ScrollTopAndComment'
 
 interface LayoutProps {
   content: CoreContent<CorePost>

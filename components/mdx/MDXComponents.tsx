@@ -2,8 +2,8 @@ import TOCInlineOriginal from 'pliny/ui/TOCInline'
 import Pre from 'pliny/ui/Pre'
 import BlogNewsletterForm from 'pliny/ui/BlogNewsletterForm'
 import type { MDXComponents } from 'mdx/types'
-import Image from './Image'
-import CustomLink from './Link'
+import Image from '@/components/Image'
+import CustomLink from '@/components/Link'
 import TableWrapper from './TableWrapper'
 
 // 包装 TOCInline 组件，添加 toc 的 null 检查
