@@ -1,14 +1,13 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { slug } from 'github-slugger'
 import { formatDate } from 'pliny/utils/formatDate'
 import { CoreContent, CorePost } from '@/lib/content'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
-import tagData from 'app/tag-data.json'
 import PageHeader from '@/components/shell/PageHeader'
+import TagSidebar from '@/components/blog/TagSidebar'
 
 interface PaginationProps {
   totalPages: number
@@ -74,57 +73,14 @@ export default function ListLayoutWithTags({
   initialDisplayPosts = [],
   pagination,
 }: ListLayoutProps) {
-  const pathname = usePathname()
-  const tagCounts = tagData as Record<string, number>
-  const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a])
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-14 md:pb-20">
+    <div className="mx-auto w-full max-w-6xl">
       <PageHeader title={title} className="pb-8" />
 
-      <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
-        <aside className="hidden lg:block lg:w-[260px] lg:flex-none">
-          <div className="sticky top-6 max-h-[calc(100dvh-7rem)] overflow-auto border border-black/12 bg-white px-5 py-5 [scrollbar-color:rgba(0,0,0,0.12)_transparent] [scrollbar-width:thin] dark:border-white/15 dark:bg-black dark:[scrollbar-color:rgba(255,255,255,0.14)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/10 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent">
-            <div className="px-1">
-              {pathname.startsWith('/blog') ? (
-                <h3 className="text-primary-500 text-xs font-bold tracking-[0.12em] uppercase">
-                  All Posts
-                </h3>
-              ) : (
-                <Link
-                  href="/blog"
-                  className="text-xs font-bold tracking-[0.12em] text-black/72 uppercase transition-colors duration-200 hover:text-[#27A6DE] dark:text-white/72"
-                >
-                  All Posts
-                </Link>
-              )}
-              <ul className="mt-4">
-                {sortedTags.map((tag) => {
-                  const isActive = decodeURI(pathname.split('/tags/')[1] || '') === slug(tag)
-
-                  return (
-                    <li key={tag} className="my-3">
-                      {isActive ? (
-                        <h3 className="text-primary-500 inline px-3 py-2 text-sm font-bold uppercase">
-                          {`${tag} (${tagCounts[tag]})`}
-                        </h3>
-                      ) : (
-                        <Link
-                          href={`/tags/${slug(tag)}`}
-                          className="px-3 py-2 text-sm font-medium text-black/66 uppercase transition-colors duration-200 hover:text-[#27A6DE] dark:text-white/66"
-                          aria-label={`View posts tagged ${tag}`}
-                        >
-                          {`${tag} (${tagCounts[tag]})`}
-                        </Link>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          </div>
-        </aside>
+      <div className="flex gap-10 lg:gap-14">
+        <TagSidebar />
 
         <div className="min-w-0 flex-1 pb-4">
           <ul className="divide-y divide-black/10 dark:divide-white/12">
