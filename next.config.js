@@ -69,11 +69,22 @@ module.exports = () => {
     reactStrictMode: true,
     trailingSlash: false,
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+    compiler: {
+      styledComponents: true,
+    },
     images: {
       remotePatterns: [
         {
           protocol: 'https',
           hostname: 'picsum.photos',
+        },
+        {
+          protocol: 'https',
+          hostname: 'pbs.twimg.com',
+        },
+        {
+          protocol: 'https',
+          hostname: 'x.com',
         },
       ],
       unoptimized,
