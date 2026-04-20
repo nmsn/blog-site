@@ -75,8 +75,12 @@ const ThemeSwitch = () => {
     <div className="flex items-center">
       <button
         type="button"
-        aria-label={`Theme switcher. Current theme: ${currentTheme}. Click to switch to ${nextTheme}.`}
-        title={`Theme: ${currentTheme} -> ${nextTheme}`}
+        aria-label={
+          mounted
+            ? `Theme switcher. Current theme: ${currentTheme}. Click to switch to ${nextTheme}.`
+            : 'Theme switcher'
+        }
+        title={mounted ? `Theme: ${currentTheme} -> ${nextTheme}` : 'Theme switcher'}
         onClick={() => setTheme(nextTheme)}
         className="hover:text-primary-500 dark:hover:text-primary-400 flex items-center justify-center"
       >
