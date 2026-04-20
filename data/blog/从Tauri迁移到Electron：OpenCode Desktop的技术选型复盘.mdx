@@ -1,0 +1,98 @@
+---
+title: '从 Tauri 迁移到 Electron：OpenCode Desktop 的技术选型复盘'
+date: '2026-04-20'
+lastmod: '2026-04-20'
+tags: ['技术选型', 'Electron', 'Tauri', '桌面应用', '前端']
+draft: false
+summary: 'OpenCode Desktop 从 Tauri 迁移到 Electron 的技术选型复盘。WebKit 渲染问题、CLI 启动坑、以及为什么说 Tauri 其实不「快」——这是一次务实的技术决策。'
+images: ['/static/images/twitter-card.png']
+authors: ['default']
+---
+
+<LinkPreview url="https://x.com/brendonovich/status/2045725889422610602" />
+
+---
+
+最近看到 OpenCode Desktop 宣布从 Tauri 换到 Electron 的消息，评论区挺热闹的——有人说「Tauri 不是更轻更快吗」，也有人说「Electron 早就该淘汰了」。
+
+我觉得挺有意思的，正好认真读了一下他们发的长文，发现这次迁移背后其实挺有逻辑的，不是什么「技术退步」，反而是一次挺务实的选择。
+
+---
+
+## 先说说 OpenCode 是怎么回事
+
+OpenCode 是个 AI 编程工具，整个技术栈都是 TypeScript。它的架构是经典的客户端-服务端模式：
+
+- 有 TUI 版本、网页版本，它们都连着一个后台服务
+- 后台服务负责跑 Agent Loop、和 LLM 通信、读写 SQLite 数据库
+- Desktop 版本就是把整套东西打包成可下载的桌面应用，让用户不用自己配环境
+
+早期为了快速出活，他们选了 Tauri 做包装，启动时跑一下 CLI，网页 UI 连上本地服务就能用了。麻雀虽小，五脏俱全。
+
+---
+
+## 问题是一天天暴露出来的
+
+用了段时间之后，两个坑越来越明显。
+
+**第一个是 WebKit 的问题。**
+
+Tauri 在 macOS 和 Linux 上用的是 WebKit，而不是 Chromium。这就有意思了——WebKit 不但性能比 Chromium 差一截，样式渲染上还经常有细微的不一致。同一个 CSS，macOS 上看起来好好的，Windows 上可能就歪了。
+
+团队里有人直接吐槽：
+
+> "Because WebKit is assssss."
+
+挺真实的。
+
+Tauri 官方说他们在推进用 CEF（Chromium Embedded Framework）替换掉 WebKit，但什么时候能用上还是个未知数。
+
+**第二个是 CLI 启动的问题。**
+
+之前 Desktop 版的逻辑是：App 启动 → 运行一个捆绑的 CLI → CLI 执行 `opencode serve` → 网页 UI 再去连这个服务。这套流程在 Windows 上特别容易出问题，偶尔会莫名其妙地启动失败。
+
+这事儿本身不算致命，但当团队打算把底层从 Bun 换成 Node 的时候，突然意识到一个问题：与其费劲维护这套 CLI 启动逻辑，为什么不直接在 Electron 自带的 Node 进程里跑服务端代码呢？
+
+---
+
+## 所以就迁到 Electron 了
+
+Electron 最大的好处就是内置了 Chromium，渲染问题直接没了，跨平台体验终于一致了。
+
+而且现在服务端可以直接跑在 Electron 的 Node 进程里：
+
+```js
+app.whenReady().then(() => {
+  // 服务端直接在这里启动，不用再跑 CLI 了
+  startServer()
+  createWindow()
+})
+```
+
+启动更快，失败率更低，维护起来也省心。
+
+---
+
+## Tauri 其实不「快」
+
+这里有个挺常见的误解很多人容易踩。
+
+Tauri 用 Rust 写的，听起来很厉害对吧？但 Tauri 本身其实就是个 Rust 写的 webview 包装器，它不会让你的应用变快。想快，得把业务逻辑本身用 Rust 写才行。
+
+OpenCode 的核心逻辑全在 TypeScript / Node 里，根本没有 Rust 的用武之地。这种情况下选 Tauri，就是花钱买了把好枪，结果拿来当烧火棍使。
+
+---
+
+## 怎么说呢
+
+读完全文，印象最深的是团队那句：
+
+> "This is simply a pragmatic decision based on our use case."
+
+技术选型这东西，真的没有银弹。Electron 包体积大、Tauri 渲染有缺陷——这些都是客观事实。关键还是看你的场景是什么，你愿意为哪些 trade-off 买单。
+
+如果你要做的是 UI 复杂、对渲染一致性要求高的应用，而且核心逻辑在 Node 里，那 Electron 其实挺香的。反过来，你要是想做一个轻量小工具，或者有性能敏感的原生逻辑要跑，Tauri 确实更合适。
+
+---
+
+_标签：_ #技术选型 #Electron #Tauri #OpenCode #桌面应用 #前端
