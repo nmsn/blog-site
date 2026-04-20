@@ -1,4 +1,9 @@
 {
+  "技术选型": 1,
+  "electron": 1,
+  "tauri": 1,
+  "桌面应用": 1,
+  "前端": 1,
   "markdown": 1,
   "code": 1,
   "features": 1,
