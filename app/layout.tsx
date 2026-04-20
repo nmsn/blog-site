@@ -2,11 +2,14 @@ import 'css/tailwind.css'
 import 'pliny/search/algolia.css'
 import 'remark-github-blockquote-alert/alert.css'
 
-import { Poppins } from 'next/font/google'
+import { Poppins, Geist } from 'next/font/google'
 import { Analytics, AnalyticsConfig } from 'pliny/analytics'
 import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
+import { cn } from '@/components/lib/utils'
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 const poppins = Poppins({
   weight: '400',
@@ -61,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang={siteMetadata.language}
-      className={`${poppins.variable} scroll-smooth`}
+      className={cn('scroll-smooth', poppins.variable, 'font-sans', geist.variable)}
       suppressHydrationWarning
     >
       <link
