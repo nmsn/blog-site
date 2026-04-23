@@ -1,0 +1,208 @@
+---
+title: 'Dayflow 用户行为判断原理详解'
+date: '2026-04-23'
+lastmod: '2026-04-23'
+tags: ['macOS', 'AI', '时间追踪', 'Swift']
+draft: false
+summary: '一款基于 AI 的 macOS 时间追踪应用如何理解"你做了什么"。Dayflow 通过屏幕截图 + AI 推断的组合来实现行为理解，而不是传统的活动检测或应用监控。'
+images: ['/static/images/twitter-card.png']
+---
+
+<LinkPreview url="https://github.com/JerryZLiu/Dayflow" />
+
+## 概述
+
+Dayflow 这款 macOS 时间追踪应用挺有意思的。它不是靠监听 App 使用情况或者键盘鼠标监控来工作的，而是用了另一种思路：**截图 + AI 推断**。
+
+整个流程简单说就是：
+
+```
+屏幕截图采集 → 智能批量分组 → AI 分析（含 Idle 短路） → 时间线卡片生成
+```
+
+---
+
+## 第一阶段：屏幕截图采集
+
+### SCScreenshotManager
+
+Dayflow 用的是 Apple 的 `SCScreenshotManager`，这是 ScreenCaptureKit 的一部分。关键点在于：**这不是录视频，而是定时截图**。
+
+这样做有几个好处：
+
+- 不会触发 macOS 的屏幕录制指示器（隐私友好）
+- 文件小（压缩成 JPEG，85% 质量）
+- 分辨率降到 1080p 左右，省存储
+
+截图间隔默认 10 秒，可以自己在设置里改。
+
+### 截图时机
+
+截图不是按固定时间均匀切分的，而是用 `DispatchSourceTimer` 触发。每次截图会同时记录两个数据：
+
+```swift
+let captureTime = Date()
+let idleSecondsAtCapture = InputIdleSnapshot.currentIdleSeconds()
+```
+
+这个 `idleSecondsAtCapture` 很重要，它反映的是系统级别的用户输入空闲时间。
+
+### 系统状态感知
+
+`ScreenRecorder` 还会监听系统事件，自动暂停/恢复录制：
+
+| 事件     | 行为          |
+| -------- | ------------- |
+| 系统睡眠 | 暂停          |
+| 系统唤醒 | 等 5 秒恢复   |
+| 屏幕锁定 | 暂停          |
+| 屏幕解锁 | 等 0.5 秒恢复 |
+| 屏保启动 | 暂停          |
+| 屏保停止 | 等 0.5 秒恢复 |
+
+这样就避免了在你不使用电脑的时候还在那傻录。
+
+---
+
+## 第二阶段：智能批量分组
+
+### 为什么要批量
+
+每 10 秒一张图，一小时就是 360 张。如果直接逐张扔给 AI 分析，那个成本真的扛不住。
+
+Dayflow 的做法是**动态批量**——把连续的时间窗口打包成一个分析单元。
+
+### 分批逻辑
+
+关键是这个分批不是按固定时长切分的，而是根据**时间间隙**动态决定：
+
+```swift
+// 配置来自 LLM 服务（不同 AI 提供商有不同的最优配置）
+let maxGap: TimeInterval = config.maxGap       // 截图间隔超过此值则断开
+let maxBatchDuration: TimeInterval = config.targetDuration  // 每批目标时长
+
+for screenshot in orderedScreenshots {
+  let gap = currentScreenshot.capturedAt - lastScreenshot.capturedAt
+  let currentDuration = currentScreenshot.capturedAt - bucket.first.capturedAt
+
+  // 两种情况开启新批次：
+  // 1. 时间间隙太大（用户可能离开了）
+  // 2. 当前批次时长超过目标
+  if gap > maxGap || currentDuration > maxBatchDuration {
+    saveCurrentBatch()
+    startNewBucket()
+  }
+}
+```
+
+所以连续操作会归入同一批，中断超过阈值就分开，挺智能的。
+
+---
+
+## 第三阶段：Idle 检测（短路逻辑）
+
+### 为什么要检测 Idle
+
+如果用户长时间没操作，直接标记成 "Idle" 就行了，**不用调 AI**。省的钱还是挺可观的。
+
+### Idle 判断规则
+
+```swift
+private enum IdleBatchRules {
+  static let classifierVersion = "idle_v1"
+  static let minimumEligibleBatchDurationSeconds = 12 * 60  // 至少 12 分钟
+  static let requiredCoverageRatio = 0.95                   // 95% 时间有空闲记录
+  static let requiredQualifiedIdleRatio = 0.90              // 90% 截图显示 ≥60s 空闲
+  static let qualifyingIdleSecondsAtCapture = 60           // 每张截图空闲 ≥60秒
+  static let maxAllowedUncoveredGapSeconds = 30           // 最大未覆盖间隙 30 秒
+  static let mergeGapSeconds = 5 * 60                      // 可合并前一个 Idle 卡片的间隔
+}
+```
+
+### 覆盖段合并算法
+
+这个挺巧妙的——每个截图记录的是"这个截图捕获的瞬间往前空闲了多久"：
+
+```
+截图1 @t=0s, idleSeconds=0    → 无覆盖
+截图2 @t=60s, idleSeconds=30  → 覆盖 [30s, 60s]
+截图3 @t=120s, idleSeconds=60  → 覆盖 [60s, 120s]
+截图4 @t=180s, idleSeconds=0   → 无覆盖
+
+合并后覆盖段：[30s, 120s]（两个段重叠，合并为一段）
+```
+
+如果前一个卡片也是 Idle，且间隔 < 5 分钟，会合并成一个更长的 Idle 卡片。
+
+---
+
+## 第四阶段：AI 分析
+
+### 三种 AI 提供商
+
+Dayflow 支持三种分析路径：
+
+```
+┌─────────────────┐
+│  Gemini         │  云端 Google API，视频理解 + 生成卡片
+├─────────────────┤
+│  ChatGPT/Claude │  CLI 封装（Codex CLI / Claude Code）
+│  (CLI-based)    │  通过 Bash 执行 CLI，解析结构化输出
+├─────────────────┤
+│  Local          │  Ollama / LM Studio 本地模型
+│  (Ollama/LM)    │  与 Gemini 类似，但请求发给本地服务
+└─────────────────┘
+```
+
+### Gemini 流程（最省事）
+
+Gemini 支持视频理解，可以直接分析截图序列，**一次调用**搞定。
+
+### Local 流程（最麻烦）
+
+本地模型不支持视频理解，得逐帧处理：
+
+```
+视频帧提取（30帧）→ 30 次描述请求 → 合并 → 生成标题 → 检查合并 → 生成卡片
+（33+ 次 LLM 调用）
+```
+
+所以本地模式又慢又贵，但好处是完全不联网，隐私拉满。
+
+---
+
+## 第五阶段：时间线卡片
+
+### 4 AM 规则
+
+Dayflow 的"一天"不是按午夜划分的，而是**早上 4 AM**：
+
+```swift
+func getDayInfoFor4AMBoundary() -> (dayString: String, startOfDay: Date, endOfDay: Date) {
+  // 如果当前时间 < 4 AM，则属于"昨天"
+  if self < fourAMToday {
+    startOfDay = calendar.date(byAdding: .day, value: -1, to: fourAMToday)!
+  } else {
+    startOfDay = fourAMToday
+  }
+}
+```
+
+这个设计挺合理的，凌晨的编程工作不会被切成两天。
+
+---
+
+## 总结
+
+Dayflow 的思路跟传统的时间追踪工具完全不同：
+
+1. **被动截图**：每 10 秒采一次屏幕，不打扰用户
+2. **智能分批**：基于时间间隙动态分组，减少 AI 调用
+3. **Idle 短路**：大量空闲时跳过 AI，省钱
+4. **AI 推断**：让 LLM 理解屏幕内容来判断用户在干啥
+
+本质上是"让机器理解屏幕在发生什么"而不是"监控你开了什么 App"。挺有意思的思路。
+
+---
+
+_文档基于 Dayflow 源码（v1.10.1）生成_
