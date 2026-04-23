@@ -5,9 +5,8 @@ import type { MDXComponents } from 'mdx/types'
 import Image from '@/components/Image'
 import CustomLink from '@/components/Link'
 import TableWrapper from './TableWrapper'
-import LinkPreview from '@/components/LinkPreview/LinkPreview'
+import { LinkPreview } from '@/components/link-preview'
 
-// 包装 TOCInline 组件，添加 toc 的 null 检查
 function TOCInline(props: Parameters<typeof TOCInlineOriginal>[0] & { toc?: unknown[] }) {
   if (!props.toc || !Array.isArray(props.toc)) {
     return null
