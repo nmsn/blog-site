@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { cn } from '@/components/lib/utils'
+import { cn } from '@/lib/utils'
 
 export interface LinkPreviewSkeletonProps {
   className?: string
