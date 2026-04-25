@@ -1,0 +1,29 @@
+---
+title: 'Agent Harness：LLM 真正的工程壁垒'
+date: '2026-04-25'
+lastmod: '2026-04-25'
+tags: ['AI', 'agent', '工程']
+draft: false
+summary: '读完 "The Agent Harness" 后的一些思考：为什么同样的模型，不同的 harness，效果天差地别？'
+images: ['/static/images/twitter-card.png']
+---
+
+原文链接：[The Agent Harness](https://blog.qiaomu.ai/2026-04-18-JgypqM)
+
+<LinkPreview url="https://blog.qiaomu.ai/2026-04-18-JgypqM" />
+
+---
+
+读完这篇博客，最大的感受是：**做 AI 应用，模型只是门票，真正的壁垒在 harness（架构基础设施）。**
+
+文中有个数据很有说服力：LangChain 通过只改变 LLM 的基础设施，不动模型本身，让 TerminalBench 2.0 排名从 30+ 冲到第 5 名。同样一个模型，换个 harness，差距就是这么大。
+
+文章把 Agent Harness 分成了 12 个组件：编排循环、工具调用、记忆、上下文管理、状态持久化、错误处理、安全防护……每一个都是硬骨头。尤其记忆系统——短期记忆要高效，长期记忆要可靠，还要避免幻觉。这比训练模型难多了。
+
+让我印象深刻的是上下文管理的那句："把上下文当稀缺资源来管理。"现在大家都在卷 context window 有多大，但真正的问题是：如何在这个有限的空间里，让模型始终拿到最关键的信息？这一点我在做 Dayflow 的时候也深有体会——截图间隔设多久、信息怎么压缩、什么时候该"遗忘"，都是trade-off。
+
+另外，verification loop（验证循环）容易被忽略。模型输出的东西，你不能假设它是对的，需要有机制去校验。这一点在生产环境里尤为重要。
+
+总的来说，这篇文章没有讲什么新模型、新论文，全是工程实践。但恰恰是这些工程实践，才是真正区分"能用"和"好用"的关键。如果你也在做 AI 应用，推荐一读。
+
+---
