@@ -12,7 +12,7 @@ Personal blog about frontend development, indie projects, design explorations, a
 ## Development
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the blog.
