@@ -1,0 +1,168 @@
+---
+title: '用 View Transition API 做了一个还不错的主题切换动画'
+date: '2026-05-05'
+lastmod: '2026-05-05'
+tags: ['View Transition API', 'CSS', '动画', '前端']
+draft: false
+summary: '用 View Transition API 和 clip-path 实现圆形展开的主题切换动画，配合 Framer Motion 的图标微动画，整体体验挺舒服的。'
+images: ['/static/images/twitter-card.png']
+---
+
+最近在做的浏览器扩展里有一个主题切换按钮，点一下会在 light / dark / system 三个模式之间轮换。一开始就是普通的切换，后来觉得太无聊了，就想着能不能加点有意思的动画。
+
+最终做出来的效果是：点击按钮后，一个圆从按钮位置展开，把整个页面"刷"成新主题。再加上图标本身也有 hover 动画，整体体验还挺舒服的。这里记录一下实现思路。
+
+<ThemeSwitchDemo />
+
+## 核心：View Transition API + clip-path
+
+这个动画的关键技术点就两个：View Transition API 和 CSS clip-path。
+
+View Transition API 是浏览器原生提供的页面过渡方案，最早是给 SPA 路由切换用的，但它其实可以绑定到任何 DOM 状态变化上。基本用法是：
+
+```js
+document.startViewTransition(() => {
+  // 在这里修改 DOM
+})
+```
+
+调用之后，浏览器会自动对当前状态截图（`::view-transition-old`），然后执行回调，再对新状态截图（`::view-transition-new`），最后在过渡期间把两张图叠在一起做动画。
+
+默认的动画是交叉淡入淡出，但我们可以用 `clip-path: circle()` 覆盖它，做出圆形展开的效果。
+
+## 算圆的起点和半径
+
+动画的起点是按钮的中心位置，这需要拿到按钮在视口中的坐标：
+
+```js
+const { top, left, width, height } = button.getBoundingClientRect()
+const x = left + width / 2
+const y = top + height / 2
+```
+
+半径要能覆盖整个页面，所以算的是按钮中心到视口最远角落的距离：
+
+```js
+const maxRadius = Math.hypot(Math.max(x, viewportWidth - x), Math.max(y, viewportHeight - y))
+```
+
+`Math.hypot` 算的是欧几里得距离，刚好就是对角线长度。
+
+## 组合起来
+
+把这几块拼在一起，完整的动画逻辑大概是这样：
+
+```js
+// 先做一次状态快照
+const transition = document.startViewTransition(() => {
+  // flushSync 确保 DOM 更新在回调内同步完成
+  flushSync(() => {
+    setMode(nextMode)
+    applyTheme(nextMode)
+  })
+})
+
+// 等浏览器准备好之后，对新状态的伪元素做动画
+transition.ready.then(() => {
+  document.documentElement.animate(
+    {
+      clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`],
+    },
+    {
+      duration: 400,
+      easing: 'ease-in-out',
+      pseudoElement: '::view-transition-new(root)',
+    }
+  )
+})
+```
+
+注意 `pseudoElement: "::view-transition-new(root)"` 这个参数，它告诉浏览器这个动画是挂在新状态的伪元素上的，而不是整个文档。
+
+还有一个细节：需要在 CSS 里把默认的过渡动画关掉，不然会和我们的 clip-path 动画打架：
+
+```css
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+```
+
+## 兼容性处理
+
+View Transition API 的浏览器支持度还不错，但还是做了降级：
+
+```js
+if (typeof document.startViewTransition !== 'function') {
+  applyNextTheme()
+  return
+}
+```
+
+不支持的浏览器直接切换，没有动画，但功能不受影响。
+
+## 图标的微动画
+
+除了页面级别的过渡，三个图标本身也有各自的 hover 动画，用 Framer Motion 实现的。
+
+太阳图标：8 条光线依次淡入，用 stagger delay 做出"逐条点亮"的效果。
+
+```js
+const PATH_VARIANTS = {
+  normal: { opacity: 1 },
+  animate: (i) => ({
+    opacity: [0, 1],
+    transition: { delay: i * 0.1, duration: 0.3 },
+  }),
+}
+```
+
+每条光线的 custom 值不同，delay 就错开了。
+
+月亮图标：一个简单的摇摆动画，看起来像是在晃脑袋。
+
+```js
+const SVG_VARIANTS = {
+  normal: { rotate: 0 },
+  animate: { rotate: [0, -10, 10, -5, 5, 0] },
+}
+```
+
+显示器图标（system 模式）：对勾路径从无到有画出来，用 pathLength 控制。
+
+```js
+const CHECK_VARIANTS = {
+  normal: { pathLength: 1, opacity: 1 },
+  animate: {
+    pathLength: [0, 1],
+    opacity: [0, 1],
+    transition: { duration: 0.4, ease: 'easeInOut' },
+  },
+}
+```
+
+这几个动画都不大，但 hover 的时候能给到一点反馈，不至于让按钮显得太死板。
+
+## flushSync 的必要性
+
+这里有个容易踩坑的地方：`startViewTransition` 的回调里，DOM 更新必须是同步的。但 React 的 `setState` 默认是批量异步更新的，如果不处理，浏览器可能在回调执行完之前就截图了，新旧状态看起来一样，动画就白做了。
+
+所以用了 `react-dom` 的 `flushSync` 强制同步刷新：
+
+```js
+import { flushSync } from 'react-dom'
+
+document.startViewTransition(() => {
+  flushSync(() => {
+    setMode(nextMode)
+    applyTheme(nextMode)
+  })
+})
+```
+
+## 最后
+
+整个实现其实不复杂，核心代码加起来也就几十行。View Transition API 的好处是声明式的，不需要手动管理 DOM 快照或者处理布局抖动，浏览器帮你搞定了大部分事情。配合 `clip-path` 做出来的圆形展开效果，比起简单的 fade 或者 slide 要有意思得多。
+
+如果你的项目也需要做主题切换动画，可以试试这个方案。

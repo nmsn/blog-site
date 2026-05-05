@@ -6,6 +6,7 @@ import Image from '@/components/Image'
 import CustomLink from '@/components/Link'
 import TableWrapper from './TableWrapper'
 import { LinkPreview } from '@/components/link-preview'
+import ThemeSwitchDemo from '@/components/ThemeSwitchDemo'
 
 function TOCInline(props: Parameters<typeof TOCInlineOriginal>[0] & { toc?: unknown[] }) {
   if (!props.toc || !Array.isArray(props.toc)) {
@@ -22,4 +23,5 @@ export const components: MDXComponents = {
   table: TableWrapper,
   BlogNewsletterForm,
   LinkPreview,
+  ThemeSwitchDemo,
 }
