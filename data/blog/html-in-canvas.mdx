@@ -1,0 +1,138 @@
+---
+title: 'HTML-in-Canvas：把 HTML 画进 Canvas 的新提案'
+date: '2026-05-08'
+lastmod: '2026-05-08'
+tags: ['Canvas', 'Web API', 'WICG', '前端']
+draft: false
+summary: 'WICG 提出的 HTML-in-Canvas 提案，允许在 Canvas 中直接绘制 HTML 元素，支持表单交互、WebGL/WebGPU 纹理映射，已在 Chrome Canary 中提供实验性支持。'
+images: ['/static/images/twitter-card.png']
+---
+
+最近在 Hacker News 上看到一个挺有意思的提案讨论：
+
+<LinkPreview url="https://news.ycombinator.com/item?id=44772177" />
+
+这个提案来自 WICG（Web Platform Incubator Community Group），目标是让 `<canvas>` 能够直接绘制 HTML 元素。完整提案在这里：
+
+<LinkPreview url="https://github.com/WICG/html-in-canvas" />
+
+## 为什么需要这个？
+
+一直以来，Canvas 和 DOM 是两个平行世界。Canvas 擅长像素级控制和 GPU 加速渲染，但处理文本排版、国际化、表单交互这些事情就非常痛苦。反过来，HTML/CSS 天生就是为内容排版设计的，但很难嵌入到 Canvas 的渲染管线里。
+
+现实中的典型痛点：
+
+- **图表组件**：你想在 Canvas 图表里画一个多行带样式的图例，要么手撸文字排版，要么用 `html2canvas` 之类的 hack
+- **游戏 UI**：游戏引擎用 WebGL/WebGPU 渲染，但菜单、对话框这些 UI 需要富文本排版，只能自己造轮子
+- **创意工具**：Figma、Canva 这类工具需要在画布上放置富文本内容，目前的方案都不够优雅
+- **无障碍**：Canvas 的 fallback 内容经常和实际渲染不一致，无障碍支持一直是个难题
+
+社区里有人提到：
+
+> "Web 平台本来就是为文本展示设计的，但居然不提供底层的字体渲染和文本度量 API，这太疯狂了。"
+
+这个提案本质上就是想打通 Canvas 和 DOM 之间的墙。
+
+## 核心 API
+
+提案引入了三个主要原语：
+
+### 1. `layoutsubtree` 属性
+
+在 `<canvas>` 上添加 `layoutsubtree` 属性，让 canvas 的子元素参与布局和命中测试。子元素会获得自己的层叠上下文和包含块，但不会直接显示——只有通过 `drawElementImage()` 才会绘制到 canvas 上。
+
+```html
+<canvas id="canvas" layoutsubtree>
+  <form id="myForm">
+    <label for="name">名字：</label>
+    <input id="name" />
+  </form>
+</canvas>
+```
+
+### 2. `drawElementImage()`
+
+这是核心方法，把 canvas 的子元素绘制到 canvas 上，并返回一个 CSS transform，可以用来同步 DOM 位置（保证无障碍和命中测试正常工作）。
+
+```js
+const ctx = canvas.getContext('2d')
+
+canvas.onpaint = () => {
+  ctx.reset()
+  const transform = ctx.drawElementImage(myForm, 100, 0)
+  myForm.style.transform = transform.toString()
+}
+```
+
+这个方法还支持指定源区域和目标区域，用法类似 `drawImage()`。
+
+### 3. `paint` 事件
+
+当 canvas 子元素的渲染发生变化时触发，让你有机会更新 canvas 的绘制。这和浏览器自己的 Paint 步骤对齐，每帧只触发一次。
+
+```js
+canvas.onpaint = (event) => {
+  // event.changedElements 告诉你哪些子元素发生了变化
+  ctx.reset()
+  ctx.drawElementImage(myForm, 0, 0)
+}
+```
+
+还有一个 `requestPaint()` 方法，类似 `requestAnimationFrame()`，可以主动触发一次 paint。
+
+## 不只是 2D Canvas
+
+提案同时覆盖了 WebGL 和 WebGPU：
+
+- **WebGL**：`texElementImage2D()` 可以把 HTML 元素作为纹理贴到 3D 物体上
+- **WebGPU**：`copyElementImageToTexture()` 把 HTML 元素复制为 GPU 纹理
+
+这意味着你可以在 3D 场景里直接用 HTML 渲染 UI 面板，不用再截图贴图了。
+
+## OffscreenCanvas 支持
+
+提案还考虑了 Worker 线程的场景。通过 `captureElementImage()` 可以把元素快照捕获为 `ElementImage` 对象，然后 `transfer` 到 Worker 里的 `OffscreenCanvas` 进行绘制。
+
+```js
+canvas.onpaint = () => {
+  const elementImage = canvas.captureElementImage(myForm)
+  worker.postMessage({ elementImage }, [elementImage])
+}
+```
+
+## 安全和隐私
+
+提案对安全和隐私做了比较细致的考虑。以下内容在绘制时会被排除：
+
+- 跨域资源（iframe、跨域图片等）
+- 系统颜色、主题偏好
+- 拼写和语法标记
+- 已访问链接样式
+- 表单自动填充信息
+- 亚像素字体抗锯齿
+
+## 社区反应
+
+HN 上的讨论挺热烈的，222 分，116 条评论。几种典型观点：
+
+**支持派**：有人认为这是 web 平台进化的必然方向。特别是对于创意工具、游戏 UI、富文本编辑器（比如分页排版）这些场景，目前的方案都是 hack，这个提案能从根本上解决问题。
+
+**质疑派**：有人觉得 "HTML 画进 Canvas 里的 HTML" 感觉很 cursed，质疑是否有必要。也有人指出安全问卷里的指纹风险部分还是 TODO。
+
+**务实派**：有人提到 SVG 的 `foreignObject` 其实已经能做类似的事情（比如 [snapdom](https://github.com/zumerlab/snapdom) 就是用这个原理做页面截图的），但性能和灵活性不如原生方案。
+
+## 当前状态
+
+这个提案已经在 Chromium 中实现了实验性功能，可以通过 `chrome://flags/#canvas-draw-element` 开启。作者团队来自 Chromium 核心团队，包括 Philip Rogers、Chris Harrelson 等人。
+
+如果你对这个提案感兴趣，可以去 GitHub 上提 issue 或者参与讨论：
+
+<LinkPreview url="https://github.com/WICG/html-in-canvas/issues" />
+
+## 我的看法
+
+这个提案解决的是一个真实存在的问题。Canvas 和 DOM 之间的割裂一直是 web 平台的一个痛点，各种 hack 方案（html2canvas、foreignObject、离屏截图）都在试图弥补这个鸿沟。
+
+从 API 设计来看，提案比较克制——没有试图把整个 DOM 树搬进 Canvas，而是让 canvas 的子元素参与布局，然后按需绘制。`paint` 事件的时序选择（在浏览器 Paint 之后立即触发，不做循环）也是务实的权衡。
+
+当然，安全和隐私方面还有很多需要打磨的地方，指纹风险问卷还是 TODO 状态。但整体方向是好的，值得期待。
