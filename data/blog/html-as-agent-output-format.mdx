@@ -1,0 +1,54 @@
+---
+title: '当 Markdown 不够用：AI Agent 输出格式的新选择'
+date: '2026-05-09'
+tags: ['AI', 'Claude', '工具']
+draft: false
+summary: 'Markdown 曾是 Agent 与人类沟通的标配格式，但随着 Agent 能力增强，它的局限性越来越明显。这篇文章的观点是：HTML 才是更好的选择。'
+images: ['/static/images/twitter-card.png']
+---
+
+<LinkPreview url="https://x.com/trq212/status/2052809885763747935" />
+
+---
+
+读完这篇来自 Claude Code 团队成员的文章，核心观点很明确：**Markdown 作为 Agent 输出格式已经不够用了，HTML 才是更好的选择。**
+
+这个判断基于一个现实变化——我们越来越少自己编辑这些文件，更多是把它们当作 spec、参考文档、brainstorm 的输出物。Markdown 最大的优势（人类可编辑）在 Agent 时代反而不那么重要了。
+
+## HTML 的五个优势
+
+**信息密度高。** Markdown 只能做文档结构，HTML 可以用表格、SVG 图表、CSS 样式、交互组件来表达几乎任何类型的信息。作者提到一个有趣的观察：当 Agent 没有 HTML 这个选项时，会退化到用 ASCII 画图、用 Unicode 字符"模拟颜色"这种低效方式。
+
+**可读性强。** 超过 100 行的 Markdown 文件很难读下去，更别说让团队里其他人读了。HTML 可以用标签页、插图、链接来组织结构，甚至支持移动端响应式，阅读体验完全不在一个量级。
+
+**分享方便。** Markdown 需要作为附件发送，HTML 只要上传到 S3 就能分享链接。"你的 spec 或报告被人实际读到的概率，HTML 比 Markdown 高得多。"
+
+**双向交互。** 这是最有意思的一点。HTML 可以加滑块、旋钮等交互元素，让你实时调参、对比方案，然后把结果一键复制回 Claude Code。这打通了"生成→评估→反馈"的闭环。
+
+**数据整合能力强。** Claude Code 可以读取文件系统、MCP（Slack/Linear 等）、浏览器、Git 历史，把这些上下文整合进一个 HTML 文件。这比 Markdown 的表达能力强太多。
+
+## 实际使用场景
+
+文章给了五个具体场景，都很实用：
+
+- **Spec 与规划**：用 HTML 做方案探索、mockup 对比、实现计划，而不是一份 200 行的 Markdown plan
+- **Code Review**：用 HTML 渲染 diff、注释、流程图，附在 PR 上比默认的 GitHub diff 视图更好用
+- **设计原型**：用 HTML 快速搭交互原型，加滑块调参，找到满意的参数后导出
+- **报告与研究**：整合多数据源（Slack、代码、Git）生成可读的报告，领导真的会看
+- **自定义编辑器**：让 Agent 生成一个一次性的编辑界面，拖拽排序、表单编辑，做完后导出 JSON 或 prompt
+
+## 代价与取舍
+
+作者也很坦诚地指出了 HTML 的不足：
+
+- **Token 消耗更高**，HTML 大约是 Markdown 的 2-4 倍。但在 Opus 4.7 的 100 万 context window 下，这不是问题
+- **生成时间更长**，但结果值得等待
+- **版本控制困难**，HTML diff 比 Markdown diff 难读得多——这确实是最大的痛点
+
+## 我的看法
+
+这篇文章让我重新思考了"Agent 输出应该长什么样"。过去我习惯让 Claude 输出 Markdown，因为觉得它简洁、通用。但实际上，我确实经常遇到"计划写了 200 行但没耐心读完"的情况。
+
+HTML 的交互性特别打动我。让 Agent 生成一个带滑块的调参界面，然后一键把参数复制回去——这个思路比"我在 prompt 里描述我要什么效果"高效太多。
+
+不过我觉得 Markdown 不会被完全取代。对于短文档、配置说明、简单的笔记，Markdown 仍然是最合适的。关键是要根据输出物的用途选择格式：**需要被读的用 HTML，需要被编辑的用 Markdown。**
