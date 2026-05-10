@@ -5,18 +5,30 @@ import { motion } from 'motion/react'
 
 const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.href !== '/travel')
 
+export type HomeNavSize = 'mobile' | 'desktop'
+
 interface HomeNavProps {
   transitioning: boolean
   returning: boolean
   show: boolean
+  size: HomeNavSize
   onNavigate: (href: string) => void
 }
 
-export default function HomeNav({ transitioning, returning, show, onNavigate }: HomeNavProps) {
+export default function HomeNav({
+  transitioning,
+  returning,
+  show,
+  size,
+  onNavigate,
+}: HomeNavProps) {
   if (!show) return null
+  const isMobile = size === 'mobile'
   return (
     <motion.nav
-      className="mt-44 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-sm sm:mt-20 sm:text-base md:gap-x-10 md:text-base"
+      className={`flex flex-wrap items-center justify-center gap-y-4 ${
+        isMobile ? 'mt-44 gap-x-6 text-sm' : 'mt-20 gap-x-10 text-base md:mt-24'
+      }`}
       initial={returning ? { y: 16, opacity: 0 } : false}
       animate={{
         y: transitioning ? 24 : 0,
