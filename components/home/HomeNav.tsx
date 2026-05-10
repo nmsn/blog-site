@@ -16,7 +16,7 @@ export default function HomeNav({ transitioning, returning, show, onNavigate }: 
   if (!show) return null
   return (
     <motion.nav
-      className="mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 md:mt-24"
+      className="mt-44 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-sm sm:mt-20 sm:text-base md:gap-x-10 md:text-base"
       initial={returning ? { y: 16, opacity: 0 } : false}
       animate={{
         y: transitioning ? 24 : 0,

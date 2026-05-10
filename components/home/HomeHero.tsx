@@ -107,7 +107,7 @@ export default function HomeHero({ children }: HomeHeroProps) {
 
         <main className="flex flex-1 flex-col items-center justify-center px-6 pb-12">
           <div
-            className={`absolute top-1/2 left-1/2 z-20 w-[min(44vw,380px)] -translate-x-1/2 -translate-y-[56%] transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
+            className={`absolute top-1/2 left-1/2 z-20 w-[min(44vw,380px)] -translate-x-1/2 -translate-y-[56%] transition-all duration-[950ms] ease-[cubic-bezier(0.77,0,0.18,1)] sm:-translate-y-[36%] md:-translate-y-[48%] lg:-translate-y-[56%] ${
               transitioning && isHome
                 ? 'top-5 left-5 w-24 translate-x-0 translate-y-0 md:top-7 md:left-8 md:w-28'
                 : transitioning && !isHome

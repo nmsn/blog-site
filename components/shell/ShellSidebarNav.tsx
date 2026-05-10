@@ -35,7 +35,7 @@ export default function ShellSidebarNav({ visible, onNavigate }: ShellSidebarNav
             key={link.href}
             type="button"
             onClick={() => onNavigate(link.href)}
-            className={`relative cursor-pointer bg-transparent text-left text-sm font-medium transition-colors duration-200 ${
+            className={`relative cursor-pointer bg-transparent text-left text-xs transition-colors duration-200 sm:text-sm ${
               isActive ? 'text-white' : 'text-white/88 hover:text-white'
             }`}
           >
