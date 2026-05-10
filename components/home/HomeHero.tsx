@@ -75,6 +75,7 @@ export default function HomeHero({ children }: HomeHeroProps) {
   const returningTransition = transitioning && !isHome
   const shellPreview = (isHome && transitioning) || (!isHome && !transitioning)
   const showContent = (isHome && transitioning) || (!isHome && !transitioning)
+  const showHomeNav = isHome || returningTransition
 
   return (
     <div className="relative flex min-h-screen w-full bg-white text-black dark:bg-black dark:text-white">
@@ -139,6 +140,7 @@ export default function HomeHero({ children }: HomeHeroProps) {
             <HomeNav
               transitioning={transitioning}
               returning={returning}
+              show={showHomeNav}
               onNavigate={beginTransition}
             />
           </div>

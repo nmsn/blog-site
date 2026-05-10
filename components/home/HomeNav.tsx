@@ -8,10 +8,12 @@ const shellLinks = headerNavLinks.filter((link) => link.href !== '/' && link.hre
 interface HomeNavProps {
   transitioning: boolean
   returning: boolean
+  show: boolean
   onNavigate: (href: string) => void
 }
 
-export default function HomeNav({ transitioning, returning, onNavigate }: HomeNavProps) {
+export default function HomeNav({ transitioning, returning, show, onNavigate }: HomeNavProps) {
+  if (!show) return null
   return (
     <motion.nav
       className="mt-20 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 md:mt-24"
