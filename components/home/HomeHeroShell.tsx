@@ -6,6 +6,8 @@ import { useHomeHeroStore } from './homeHeroStore'
 import FixedLogo from './FixedLogo'
 import ParticlesBackground from './ParticlesBackground'
 import ContentBackground from './ContentBackground'
+import ShellSidebarNav from '@/components/shell/ShellSidebarNav'
+import HomeNav from './HomeNav'
 
 interface HomeHeroShellProps {
   children: React.ReactNode
@@ -15,7 +17,8 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
   const router = useRouter()
   const pathname = usePathname()
   const isHome = pathname === '/'
-  const { transitioning, setIsHome, setTransitioning, setIsMobile } = useHomeHeroStore()
+  const { transitioning, returning, isMobile, setIsHome, setTransitioning, setIsMobile } =
+    useHomeHeroStore()
 
   const [targetHref, setTargetHref] = useState<string | null>(null)
 
@@ -60,11 +63,29 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
   }
 
   const shellPreview = (isHome && transitioning) || (!isHome && !transitioning)
+  const returningTransition = transitioning && !isHome
+  const showHomeNav = isHome || returningTransition
+
+  const handleSidebarNavigate = (href: string) => {
+    router.push(href)
+  }
 
   return (
     <>
       <ParticlesBackground shellPreview={shellPreview} />
       <FixedLogo onNavigate={handleNavigate} />
+      <ShellSidebarNav
+        visible={shellPreview && !returningTransition}
+        size={isMobile ? 'mobile' : 'desktop'}
+        onNavigate={handleSidebarNavigate}
+      />
+      <HomeNav
+        transitioning={transitioning}
+        returning={returning}
+        show={showHomeNav}
+        size={isMobile ? 'mobile' : 'desktop'}
+        onNavigate={handleNavigate}
+      />
       <ContentBackground shellPreview={shellPreview}>{children}</ContentBackground>
     </>
   )
