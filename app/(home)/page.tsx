@@ -1,5 +1,4 @@
-import ShellPreviewSkeletonWrapper from '@/components/shell/ShellPreviewSkeletonWrapper'
-
-export default async function Page() {
-  return <ShellPreviewSkeletonWrapper />
+// ShellPreviewSkeleton is now rendered inside ContentBackground when transitioning
+export default function Page() {
+  return null
 }
