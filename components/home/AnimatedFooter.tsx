@@ -1,6 +1,6 @@
 'use client'
 
-import Footer from '../../app/(home)/Footer'
+import Footer from './Footer'
 import { motion } from 'motion/react'
 
 interface AnimatedFooterProps {
