@@ -2,19 +2,9 @@
 
 import Particles from '@/components/ui/Particles'
 
-interface ParticlesBackgroundProps {
-  shellPreview: boolean
-}
-
-export default function ParticlesBackground({ shellPreview }: ParticlesBackgroundProps) {
+export default function ParticlesBackground() {
   return (
-    <div
-      className={`pointer-events-none fixed inset-0 z-10 overflow-hidden transition-[width,clip-path,box-shadow] duration-[1050ms] ease-[cubic-bezier(0.77,0,0.18,1)] ${
-        shellPreview
-          ? 'w-[320px] shadow-[24px_0_80px_rgba(7,19,31,0.18)] [clip-path:polygon(0_0,100%_0,calc(100%-56px)_100%,0_100%)]'
-          : 'w-full [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)]'
-      }`}
-    >
+    <div className="pointer-events-none fixed inset-0 z-10 w-full overflow-hidden">
       {/* 粒子容器：固定全屏尺寸，不随父容器变化 */}
       <div className="fixed inset-0 z-20 h-screen w-screen">
         <Particles

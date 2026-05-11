@@ -5,7 +5,7 @@ import SocialIcon from '@/components/social-icons'
 export default function Footer() {
   return (
     <footer>
-      <div className="fixed inset-x-0 bottom-0 mx-auto flex flex-col items-center">
+      <div className="inset-x-0 mx-auto flex flex-col items-center">
         <div className="mb-3 flex space-x-4">
           <SocialIcon
             kind="mail"

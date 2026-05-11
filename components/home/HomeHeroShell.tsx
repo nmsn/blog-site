@@ -72,7 +72,7 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
 
   return (
     <>
-      <ParticlesBackground shellPreview={shellPreview} />
+      <ParticlesBackground />
       <FixedLogo onNavigate={handleNavigate} />
       <ShellSidebarNav
         visible={shellPreview && !returningTransition}

@@ -11,7 +11,7 @@ interface AnimatedFooterProps {
 export default function AnimatedFooter({ transitioning, returning }: AnimatedFooterProps) {
   return (
     <motion.div
-      className="relative z-10"
+      className="fixed bottom-0 left-1/2 z-10 -translate-x-1/2"
       initial={returning ? { y: 16, opacity: 0 } : false}
       animate={{
         y: transitioning ? 32 : 0,
