@@ -1,6 +1,5 @@
-// import HomeHero from '@/components/home/HomeHero'
-import ShellPreviewSkeleton from '@/components/shell/ShellPreviewSkeleton'
+import ShellPreviewSkeletonWrapper from '@/components/shell/ShellPreviewSkeletonWrapper'
 
 export default async function Page() {
-  return <ShellPreviewSkeleton />
+  return <ShellPreviewSkeletonWrapper />
 }
