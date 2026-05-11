@@ -8,7 +8,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
       <HomeHero>
         <div>
-          <div className="sticky top-0 z-30 bg-white/92 px-10 py-10 backdrop-blur-md md:mb-8 dark:bg-black/92">
+          <div className="sticky top-0 z-30 bg-white/92 pt-8 pb-4 not-only:backdrop-blur-md dark:bg-black/92">
             <HeaderActions showMobileNav />
           </div>
           {children}
