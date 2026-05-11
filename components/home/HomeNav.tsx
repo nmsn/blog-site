@@ -29,12 +29,10 @@ export default function HomeNav({
       className={`fixed left-1/2 z-50 flex -translate-x-1/2 flex-wrap items-center justify-center gap-y-4 ${
         isMobile ? 'gap-x-6 text-sm' : 'gap-x-10 text-base'
       }`}
-      initial={returning ? { y: 16, opacity: 0 } : false}
-      animate={{
-        top: transitioning ? '2rem' : isMobile ? '40%' : '48%',
-        opacity: transitioning ? 0 : 1,
-      }}
-      transition={{ duration: 0.95, ease: [0.77, 0, 0.18, 1] }}
+      style={{ top: isMobile ? '40%' : '60%' }}
+      initial={returning ? { y: 24, opacity: 0 } : false}
+      animate={transitioning ? { y: 24, opacity: 0 } : { y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1] }}
     >
       {shellLinks.map((link) => (
         <motion.button
