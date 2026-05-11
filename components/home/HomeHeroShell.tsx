@@ -86,7 +86,11 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
         size={isMobile ? 'mobile' : 'desktop'}
         onNavigate={handleNavigate}
       />
-      <ContentBackground shellPreview={shellPreview}>{children}</ContentBackground>
+      {isHome ? (
+        children
+      ) : (
+        <ContentBackground shellPreview={shellPreview}>{children}</ContentBackground>
+      )}
     </>
   )
 }
