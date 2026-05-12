@@ -1,5 +1,6 @@
 'use client'
 
+import { useLayoutEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { useHomeHeroStore } from './homeHeroStore'
@@ -10,10 +11,18 @@ interface FixedLogoProps {
 
 export default function FixedLogo({ onNavigate }: FixedLogoProps) {
   const { transitioning, returning, isHome, isMobile } = useHomeHeroStore()
+  const [isReady, setIsReady] = useState(false)
+
+  // SSR 时 store 的 isHome 默认为 true，在非首页路由需要等 useLayoutEffect 修正后再渲染
+  useLayoutEffect(() => {
+    setIsReady(true)
+  }, [])
 
   // 首页静态或正在返回首页：目标是居中
   // Shell 静态或正在进入 Shell：目标是左上角
   const toCenter = (isHome && !transitioning) || (transitioning && !isHome)
+
+  if (!isReady) return null
 
   return (
     <motion.div
