@@ -5,7 +5,7 @@ import SocialIcon from '@/components/social-icons'
 export default function Footer() {
   return (
     <footer>
-      <div className="mt-16 flex flex-col items-center">
+      <div className="inset-x-0 mx-auto flex flex-col items-center">
         <div className="mb-3 flex space-x-4">
           <SocialIcon
             kind="mail"
@@ -21,20 +21,20 @@ export default function Footer() {
             className="text-white/72 hover:text-white"
             iconClassName="text-white/82 hover:text-white dark:text-white/82 dark:hover:text-white"
           />
-          <SocialIcon
+          {/* <SocialIcon
             kind="linkedin"
             href={siteMetadata.linkedin}
             size={6}
             className="text-white/72 hover:text-white"
             iconClassName="text-white/82 hover:text-white dark:text-white/82 dark:hover:text-white"
-          />
-          <SocialIcon
+          /> */}
+          {/* <SocialIcon
             kind="twitter"
             href={siteMetadata.twitter}
             size={6}
             className="text-white/72 hover:text-white"
             iconClassName="text-white/82 hover:text-white dark:text-white/82 dark:hover:text-white"
-          />
+          /> */}
           <SocialIcon
             kind="x"
             href={siteMetadata.x}
