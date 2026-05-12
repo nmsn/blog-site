@@ -1,13 +1,14 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect, startTransition } from 'react'
+import { useState, useEffect, useLayoutEffect, startTransition, lazy, Suspense } from 'react'
 import { useHomeHeroStore } from './homeHeroStore'
 import FixedLogo from './FixedLogo'
 import ParticlesBackground from './ParticlesBackground'
-import ContentBackground from './ContentBackground'
 import ShellSidebarNav from '@/components/shell/ShellSidebarNav'
 import HomeNav from './HomeNav'
+
+const ContentBackground = lazy(() => import('./ContentBackground'))
 
 interface HomeHeroShellProps {
   children: React.ReactNode
@@ -22,11 +23,10 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
 
   const [targetHref, setTargetHref] = useState<string | null>(null)
 
-  useEffect(() => {
+  // 使用 useLayoutEffect 确保在浏览器绘制前同步更新状态
+  // 避免 pathname 变化和 transitioning 重置之间出现一帧不一致
+  useLayoutEffect(() => {
     setIsHome(isHome)
-    // 路由变化后重置 transitioning 状态
-    // 原代码中 transitioning 是本地状态，路由切换后组件重新挂载会自动重置
-    // 现在用 zustand 需要手动重置
     setTransitioning(false)
   }, [isHome, setIsHome, setTransitioning])
 
@@ -86,11 +86,9 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
         size={isMobile ? 'mobile' : 'desktop'}
         onNavigate={handleNavigate}
       />
-      {isHome ? (
-        children
-      ) : (
+      <Suspense fallback={null}>
         <ContentBackground shellPreview={shellPreview}>{children}</ContentBackground>
-      )}
+      </Suspense>
     </>
   )
 }
