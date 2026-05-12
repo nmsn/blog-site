@@ -22,16 +22,15 @@ export default function HomeNav({
   size,
   onNavigate,
 }: HomeNavProps) {
-  if (!show) return null
   const isMobile = size === 'mobile'
   return (
     <motion.nav
       className={`fixed left-1/2 z-50 flex -translate-x-1/2 flex-wrap items-center justify-center gap-y-4 ${
         isMobile ? 'gap-x-6 text-sm' : 'gap-x-10 text-base'
-      }`}
+      } ${show ? '' : 'pointer-events-none'}`}
       style={{ top: isMobile ? '40%' : '60%' }}
       initial={returning ? { y: 24, opacity: 0 } : false}
-      animate={transitioning ? { y: 24, opacity: 0 } : { y: 0, opacity: 1 }}
+      animate={{ y: show ? 0 : 24, opacity: show ? 1 : 0 }}
       transition={{ duration: 0.5, ease: [0.77, 0, 0.18, 1] }}
     >
       {shellLinks.map((link) => (

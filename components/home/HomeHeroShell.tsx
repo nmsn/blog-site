@@ -64,7 +64,7 @@ export default function HomeHeroShell({ children }: HomeHeroShellProps) {
 
   const shellPreview = (isHome && transitioning) || (!isHome && !transitioning)
   const returningTransition = transitioning && !isHome
-  const showHomeNav = isHome || returningTransition
+  const showHomeNav = (isHome && !transitioning) || returningTransition
 
   const handleSidebarNavigate = (href: string) => {
     router.push(href)
