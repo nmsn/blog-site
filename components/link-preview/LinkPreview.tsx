@@ -51,9 +51,9 @@ export const LinkPreview = memo(function LinkPreview({ url, className }: LinkPre
 
   return (
     <div className={className}>
-      {state.loading && <LinkPreviewSkeleton className="mt-2 w-140" />}
+      {state.loading && <LinkPreviewSkeleton className="my-2 w-140" />}
       {state.error && !state.loading && (
-        <LinkPreviewError error={state.error} className="mt-2 w-140" />
+        <LinkPreviewError error={state.error} className="my-2 w-140" />
       )}
       {state.data && !state.loading && (
         <LinkPreviewCard
@@ -63,7 +63,7 @@ export const LinkPreview = memo(function LinkPreview({ url, className }: LinkPre
           image={state.data.image}
           favicon={state.data.favicon}
           publisher={state.data.publisher}
-          className="mt-2 w-140"
+          className="my-2 w-140"
         />
       )}
     </div>
