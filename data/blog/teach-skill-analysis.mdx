@@ -1,0 +1,142 @@
+---
+title: 'teach skill 解析：把 Agent 当作私人教师的元设计'
+date: '2026-06-11'
+tags: ['AI', 'engineering', 'frontend']
+draft: false
+summary: 'Matt Pocock 的 teach skill 把"如何让 Agent 教人"这件事拆成了一个可治理的文件系统：任务、资源、课程、参考、记录、术语表。它不是一个 prompt，而是一套带方法论的学习操作系统。'
+---
+
+## 一个不那么"提示词"的 skill
+
+最近翻到 <LinkPreview url="https://github.com/mattpocock/skills/tree/main/skills/productivity/teach" />，意外地停下来了。它不是那种常见的"帮我写代码"或"帮我读论文"型 skill——它是一个**教你学东西**的 skill：让 Agent 持续地、跨会话地、像一个真正的家庭教师那样带着你学习某个主题。
+
+更让人意外的是它的形态。`SKILL.md` 全文不到 300 行，但它定义了一整套文件结构和一套关于"如何学习"的方法论。读完以后你会意识到，它其实在回答一个比 skill 本身更大的问题：**当 LLM 已经能生成答案时，"学习"这件事的形态应该是什么？**
+
+下面是我对它的拆解，以及我看到的优缺点。
+
+## 它在做什么
+
+teach skill 把"学 X"这件事建模成对一个**教学工作空间**的长期维护。当你触发它时，Agent 会：
+
+1. 读 `MISSION.md` 搞清楚你**为什么**想学这个；
+2. 读 `RESOURCES.md` 拿到可信的知识源；
+3. 读 `learning-records/` 判断你现在会什么、不知道什么（最近发展区）；
+4. 写一节 HTML 课程到 `./lessons/0001-xxx.html`，短小、可一次完成、给一个具体收获；
+5. 必要时沉淀速查表到 `./reference/`，更新 `GLOSSARY.md` 统一术语；
+6. 在你确实掌握了什么之后，写一条 learning record，把你的新基线钉死。
+
+整个循环里最反直觉的是：**它不信任模型自身的参数化知识**。`SKILL.md` 在[资源尚未充分填充之前](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/SKILL.md#L29)明确写"永远不要相信你自己的参数化知识"——所有解释性内容都必须从 RESOURCES 里挑出的可信来源里来。模型负责的是**组织和教学**，不是事实。
+
+## 三件学习做不到的事
+
+teach skill 的方法论底盘是 `SKILL.md` 里那段简洁的表述——深层次学习需要三样东西：
+
+- **知识（Knowledge）**：从高质量资源中获取
+- **技能（Skills）**：通过高度相关的互动课程习得
+- **智慧（Wisdom）**：来自与其他学习者和实践者的互动
+
+这个三分不是修辞。它直接驱动文件结构：`RESOURCES.md` 分 Knowledge / Wisdom 两栏，课程设计时区分"知识型主题"（理论物理）和"技能型主题"（瑜伽），并且对 Wisdom 类的提问**默认转给社区**——这是 skill 里我最欣赏的一处克制。
+
+> "Your default posture should be to attempt to answer - but to ultimately delegate to a **community**." — [`SKILL.md` L107](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/SKILL.md#L107)
+
+它承认了模型能力的边界：可以解释原理，但不能替代真实的人际反馈。
+
+## 区分流利度与存储强度
+
+skill 里有两段看起来啰嗦但极其重要的论述。它警告 Agent 不要把**流利度**（in-the-moment retrieval）误认为**掌握**：
+
+> "Fluency can give the user an illusory sense of mastery, but storage strength is the real goal." — [`SKILL.md` L40](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/SKILL.md#L40)
+
+然后给出三条从认知科学里搬来的手段：
+
+- **检索练习**：让用户从记忆里调用，而不是再看一遍
+- **间隔效应**：把练习分散到不同时间
+- **交叉练习**：把相关但不同的主题混在一起练（仅限技能）
+
+这一节是整个 skill 最不像"提示词"的地方。它不是在告诉 Agent 怎么回答，而是在告诉 Agent 怎么**让用户变笨得更慢**。
+
+## 一套"会演化"的文件系统
+
+teach skill 真正的设计亮点是**文件之间的状态机**。下面这张表大致画出它的拓扑：
+
+| 文件                    | 谁写                | 谁读                   | 何时更新                         |
+| ----------------------- | ------------------- | ---------------------- | -------------------------------- |
+| `MISSION.md`            | Agent（与用户协商） | Agent 决策一切教学时   | 任务本身改变时                   |
+| `RESOURCES.md`          | Agent               | Agent 准备课程时       | 发现新资源、移除低质资源时       |
+| `GLOSSARY.md`           | Agent               | 全部课程和记录         | 用户**真正理解**一个新概念时     |
+| `learning-records/*.md` | Agent（编号递增）   | Agent 计算最近发展区时 | 出现新理解、新先验、新误解纠正时 |
+| `./reference/*.html`    | Agent               | 课程链接到它           | 跨课程共用的"压缩精华"被沉淀时   |
+| `./lessons/*.html`      | Agent               | 用户                   | 每一节新课时                     |
+| `NOTES.md`              | Agent               | Agent                  | 用户表达新偏好时                 |
+
+这套结构有意思的地方在于：**没有一张表是"完成态"**。`MISSION.md` 可以变，`GLOSSARY.md` 可以修订，`learning-records` 还会被后续记录 supersede（取代）。它假设学习是连续的、犯错的、需要修正的——而不是一次性把百科全书抄给你。
+
+特别是 learning record 的 supersede 机制。当用户的理解后来被证明是错的，[`LEARNING-RECORD-FORMAT.md` L46](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/LEARNING-RECORD-FORMAT.md#L46) 明确要求"标记旧记录为 `Status: superseded by LR-NNNN`，**不要删除**"——保留理解演变的历史本身，就是有价值的信号。这一点跟 ADR（架构决策记录）的设计哲学一脉相承。
+
+## 让我欣赏的几处设计
+
+**1. 一节 HTML 课 = 一次具体的胜利。**
+
+skill 反复强调课程要"短、可一次完成、给一个具体收获"。这跟做软件里的"垂直切片"是同一种思维：不追求覆盖，追求**让用户今天就比昨天多会一件具体的事**。如果你做完一节 HTML 课回到自己的项目里没有可用的增量，这节课就失败了。
+
+**2. 测验答案的字数必须完全一致。**
+
+> "For quizzes, each answer should be exactly the same number of words (and characters, if possible). Don't give the user any clues about the answer through formatting." — [`SKILL.md` L101](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/SKILL.md#L101)
+
+这是对 Agent 极强的一种约束。它在逼 Agent 把干扰项做成**真干扰**——靠的是语义，而不是长度或排版上的暗示。这种细节的密度，是大部分 prompt 写不出来的。
+
+**3. 术语表是教学的"语言规范"，不是词典。**
+
+`GLOSSARY-FORMAT.md` 里有一条特别锋利的规则：
+
+> "Add a term only when the user understands it. The glossary is a record of compressed knowledge, not a dictionary the user reads to learn." — [`GLOSSARY-FORMAT.md` L29](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/GLOSSARY-FORMAT.md#L29)
+
+这意味着 GLOSSARY 不是给用户"读"的，是给 Agent 在每节课里"用"的——它统一术语、避免同义词漂移、把模糊的概念从一开始就钉死。**这等于让 Agent 拥有了自己的领域语言**，比每次都从头解释要强一个量级。
+
+**4. `disable-model-invocation: true`。**
+
+frontmatter 里这个字段意味着 Agent 不会自己决定去"教你点东西"——它必须被用户显式调用。这避免了 Agent 在不合适的时候跳出来说"要不要顺便学一下？"。`argument-hint: "What would you like to learn about?"` 也在强化这一点：触发条件是**用户有明确意图**。
+
+## 我看到的局限
+
+坦诚说几个我读完觉得不舒服的地方。
+
+**1. 高度依赖"用户是被动接受方"的角色分工。**
+
+整个工作空间结构是 Agent 写、用户读。`NOTES.md` 是个例外，但更多是个"Agent 的草稿本"。在真实学习里，用户自己会写笔记、做错题本、画思维导图——这些动作没法在这个文件结构里被支持。如果你想要一个"我们一起写学习笔记"的版本，这个 skill 不够。
+
+**2. 对 Agent 的能力假设较强。**
+
+skill 假设执行它的 Agent 知道怎么：写"打印出来好看"的 HTML、能运行 CLI 打开文件、能调用 web search 找资源、能在课程里嵌入引用链接并把答案的字符数算到字符级。在模型能力比较强时这些都不是问题，但这是**静默的能力依赖**——换一个能力较弱的模型，整套设计的优雅会迅速崩塌。
+
+**3. `MISSION.md` 的"反模糊性"约束，用户其实经常做不到。**
+
+`MISSION-FORMAT.md` 在[具体优于抽象](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/MISSION-FORMAT.md#L28)这条规则里举了例子："十月份跑完半程马拉松"胜过"变得更健康"；"给团队交付一个 Rust CLI"胜过"学 Rust"。它接着要求"如果用户说不清楚为什么，先访谈他"——**访谈本身就需要教学能力**。当你学一个东西就是图个乐、图个好奇、或者只是被朋友安利时，你根本写不出一份"为什么"能过这种标准的 mission。这时整个工作空间就启动不起来。
+
+**4. 对"长任务"友好，对"短查询"不友好。**
+
+skill 在[`SKILL.md` L8](https://github.com/mattpocock/skills/blob/main/skills/productivity/teach/SKILL.md#L8)直接定义它面向"**跨会话的长期学习**"（a stateful request - they intend to learn the topic over multiple sessions）。如果你只是问"帮我搞懂 React 的 Suspense 怎么用"，它会过度工程化——会先要求你写 mission，会先建目录，会先写一条 learning record。这种仪式感在小问题上是一种负担。
+
+**5. 资源策展（curation）的成本被低估了。**
+
+`RESOURCES.md` 的理想状态是"高可信度、有注释、按时清理"。但实际上，**资源的好坏需要先读一遍才知道**。当用户从零开始学一个完全陌生的领域时，"策展"这个动作本身就接近"先学一遍"的成本——skill 把这一步轻描淡写地丢给了 Agent，但 Agent 的 web search 并不擅长这种深度评估。这是整套设计里**对模型能力最乐观**的一处假设。
+
+## 一个值得抄的方法论
+
+即使你完全不用 Claude Code、不用这个 skill 本身，`teach` 里也有一份**可以单独拿出来的方法论**：
+
+- 任何学习主题，先写一份 **mission**（具体可观察的成功标准 + 约束 + 不在范围内）；
+- 任何学习主题，先建一份 **resources**（知识 vs 智慧分开，每条带注释）；
+- 任何学习主题，先建一份 **glossary**（每个术语在你"理解"之后才进）；
+- 任何学习主题，开始积累 **learning records**（决策级的洞察，不是日志），错的理解 supersede 而不是删除；
+- 任何学习主题，每节课追求一个**具体可复用的胜利**，而不是"今天覆盖了 X 个概念"。
+
+这套做法的核心是**让学习有可审计的痕迹**——mission 变化有记录，理解演变有历史，术语有规范，资源有评估。它把"学习"从一个私密的、模糊的过程，**外化**成了一组可以回看、可以交接、可以协作的文件。
+
+## 写在最后
+
+teach skill 最让我意外的地方，不是它解决了什么问题——而是我读完以后意识到：**我目前学习任何东西的方式，都没有它设计的这么有纪律**。光是"学完一节就写一条 learning record"这一条，我大概率做不到。
+
+但这反过来也说明了它的适用边界：它适合**有时间、有耐心、愿意把学习本身当作工程来对待**的人。如果你只是想快速搞懂一个 API、或者临时读一篇论文，它会嫌你仪式感不够。
+
+而对一个真正想学点什么的人来说——可能仪式感，恰恰是现在最稀缺的东西。
