@@ -1,0 +1,312 @@
+---
+title: 'ACP 协议 1.0 来了：让任何编辑器接上任何 Agent'
+date: '2026-06-28'
+tags: ['AI']
+draft: false
+summary: 'Agent Client Protocol（ACP）刚在 6 月 24 日发布了 1.0 稳定版。它想做的事很直白——把"编辑器"和"Agent"从绑死的关系里拆开，像当年 LSP 拆语言服务一样。这是过去一年我读到最像"基础设施"的一份规范，也是最有可能被低估的一份。'
+images: ['/static/images/twitter-card.png']
+---
+
+---
+
+四天前（2026-06-24），[Agent Client Protocol](https://github.com/agentclientprotocol/agent-client-protocol) 仓库发了 `v1.0.0`。我刷到的时候愣了一下——不是因为它是什么新鲜事（仓库最早 2025-06-23 就建了），而是因为从 0.x 的频繁改动到敢标 1.0，这件事本身就是一个信号：**这套规范终于有人愿意押注了**。
+
+如果你过去一年一直在用 Cursor / Claude Code / Copilot，可能没怎么听过 ACP。这挺正常的——它解决的不是一个普通开发者每天会撞到的问题，而是一个更底层的问题：**谁规定你只能在某个特定的编辑器里用某个特定的 Agent？**
+
+---
+
+## 把 Agent 当成语言服务器一样处理
+
+ACP 立项的那个时间点挺值得说一说。仓库是 2025-06-23 创建的，GitHub 组织 [agentclientprotocol](https://github.com/agentclientprotocol) 是 2025-09-30 才成立的——也就是说，**前三个月连个正经组织都没有，是 Zed 的人先闷头把协议搞出来**，后面才慢慢把别的厂商拉进来。
+
+它的第一个 issue 还是 2025-07-01 提的，标题很随意：
+
+> "had gemini create a protocol doc" — [issue #1](https://github.com/agentclientprotocol/agent-client-protocol/issues/1)
+
+这种"先让 Gemini 写个文档"的开局方式，带着一种挺明显的实用主义气质——**先有个能用的东西，比先讨论完美形态重要得多**。后面一连串 issue 都是直接动手改协议定义、RPC 构造器、tool call 字段这些具体细节，没有一个是"我们应该搞个什么宏大愿景"。
+
+到今天，ACP 仓库在 GitHub 上有 3.5k+ star、280+ fork、已经发了 50+ 个版本。看起来不算爆炸性增长，但放在"协议规范"这种类型的项目里，已经是非常健康的曲线了。
+
+---
+
+## 它想解决什么问题
+
+直白点说：**每家编辑器（Zed、JetBrains、VSCode、Neovim）想接一个 Agent，都要重新写一套适配层**。
+
+Claude Code 之所以"只能在终端里用"，是因为它当初就是一个 CLI。要把它塞进 JetBrains IDE，要么厂商自己写一个 JetBrains 插件，要么有人搞一套 Electron wrapper（Cursor 早期就是这么干的）。每接一个新 Agent，就重复一遍这个流程。
+
+LSP（Language Server Protocol）当年解的是类似的问题——以前每家编辑器要支持 TypeScript / Rust / Go 都要自己写 language server，后来大家把协议统一了，编辑器和语言服务可以各自独立创新。
+
+ACP 的野心就是把这个模型平移到 **编辑器 ↔ Agent** 这条线上：
+
+> "ACP 是把代码编辑器/IDE 和 coding agent 之间的通信标准化——目标是本地和远程场景都能用，本质上跟 LSP 把语言服务标准化是一回事。" — [agentclientprotocol.com](https://agentclientprotocol.com/)
+
+协议本身是基于 **JSON-RPC 2.0**，本地走 stdio（agent 作为编辑器的子进程），远程走 HTTP / WebSocket（这个还在 WIP）。消息格式尽量复用 MCP（Model Context Protocol）的 JSON 表示法，避免另起炉灶。
+
+---
+
+## 时间线
+
+下面这张表是我从仓库的 commits / issues / releases 里扒出来的关键节点：
+
+| 时间       | 事件                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| 2025-06-23 | Zed 创建 `agent-client-protocol` 主仓库                                                                      |
+| 2025-07-01 | 第一个 issue：「had gemini create a protocol doc」                                                           |
+| 2025-07-14 | 协议引入版本号协商（[#8](https://github.com/agentclientprotocol/agent-client-protocol/issues/8)）            |
+| 2025-09-30 | GitHub 组织 `agentclientprotocol` 正式成立                                                                   |
+| 2026-06-24 | 发布 **v1.0.0 稳定版**                                                                                       |
+| 2026-06-26 | v2 unstable schema 文档化（[#1525](https://github.com/agentclientprotocol/agent-client-protocol/pull/1525)） |
+
+从 0.13.x 一路快速迭代到 1.0，节奏不算慢。值得注意的是，**1.0 之后维护者已经在铺 v2 的 unstable 分支**——意味着他们想得很清楚：1.0 是给生产环境用的稳定底座，v2 才是下一个版本的演进空间。
+
+---
+
+## 协议长什么样
+
+ACP 的核心是四个阶段：**initialize → session/new → session/prompt → session/update**。
+
+下面这段是直接从文档里抄出来的，最小可工作的 `initialize` 握手：
+
+```json:initialize-request.json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": 1,
+    "clientCapabilities": {
+      "fs": { "readTextFile": true, "writeTextFile": true },
+      "terminal": true
+    },
+    "clientInfo": {
+      "name": "my-editor",
+      "title": "My Editor",
+      "version": "0.1.0"
+    }
+  }
+}
+```
+
+Agent 回复：
+
+```json:initialize-response.json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "protocolVersion": 1,
+    "agentCapabilities": {
+      "loadSession": true,
+      "promptCapabilities": {
+        "image": true,
+        "embeddedContext": true
+      },
+      "mcpCapabilities": { "http": true }
+    },
+    "agentInfo": {
+      "name": "my-agent",
+      "title": "My Agent",
+      "version": "0.1.0"
+    },
+    "authMethods": []
+  }
+}
+```
+
+几个值得注意的设计点：
+
+- **能力声明（capabilities）是 optional 的**——不写就代表不支持，新能力是非破坏性的，双方按需勾选。
+- **`protocolVersion` 是一个整数**——只有破坏性变更才 bump，crate 版本和 schema 版本跟协议版本解耦。
+- **`sessionId` 在创建 session 时由 Agent 生成**——客户端不参与 ID 生成，方便 Agent 内部持久化和恢复。
+
+能力协商完了之后，真正的交互长这样（一次完整对话）：
+
+```json:session-new.json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "session/new",
+  "params": {
+    "cwd": "/home/user/project",
+    "mcpServers": [
+      {
+        "name": "filesystem",
+        "command": "/path/to/mcp-server",
+        "args": ["--stdio"],
+        "env": []
+      }
+    ]
+  }
+}
+```
+
+Agent 拿到 session ID 之后开始干活，期间通过 `session/update` 通知（不是请求，是单向通知）告诉客户端它的状态——**这是 ACP 最巧的一个设计**：
+
+```json:session-update-tool-call.json
+{
+  "jsonrpc": "2.0",
+  "method": "session/update",
+  "params": {
+    "sessionId": "sess_abc123def456",
+    "update": {
+      "sessionUpdate": "tool_call",
+      "toolCallId": "call_001",
+      "title": "Reading configuration file",
+      "kind": "read",
+      "status": "pending"
+    }
+  }
+}
+```
+
+整个交互是**服务端主导**的——Agent 想汇报就汇报，客户端不用一直轮询。这种设计让我想到 LSP 的 `$/progress` 通知——也是服务端主动推，避免把客户端搞成 polling 机器。
+
+---
+
+## 现在谁在用 ACP
+
+一年下来，ACP 已经攒出了一个挺热闹的生态。我整理了一下 [官方 registry](https://agentclientprotocol.com/get-started/clients) 里列出的工具，挑选有代表性的：
+
+**编辑器 / IDE 这一端（Clients）：**
+
+| 客户端            | 形式                                                     |
+| ----------------- | -------------------------------------------------------- |
+| **Zed**           | 原生支持                                                 |
+| **JetBrains** IDE | 官方插件                                                 |
+| **VS Code**       | ACP Client 扩展                                          |
+| **Neovim**        | CodeCompanion / agentic.nvim / avante.nvim / hermes.nvim |
+| **Emacs**         | agent-shell.el                                           |
+| **Obsidian**      | Agent Client 插件（笔记场景）                            |
+| **Pulsar**        | pulsar-acp-agent                                         |
+| **Chrome**        | 扩展 + PWA                                               |
+
+**Agent 这一端：**
+
+| Agent              | 接入方式                                 |
+| ------------------ | ---------------------------------------- |
+| **Claude Agent**   | `zed-industries/claude-agent-acp` 适配器 |
+| **Codex CLI**      | `zed-industries/codex-acp` 适配器        |
+| **Cursor**         | CLI 内置 ACP                             |
+| **Gemini CLI**     | Google 官方支持                          |
+| **GitHub Copilot** | CLI 公开预览                             |
+| **Goose**          | Block 官方客户端                         |
+| **Kimi CLI**       | MoonshotAI 官方                          |
+| **Mistral Vibe**   | 官方                                     |
+| **OpenCode**       | SST 官方                                 |
+| **Pi**             | 社区适配器 pi-acp                        |
+
+**官方 SDK：** Python、**Rust**（参考实现）、**TypeScript**、Kotlin、Java。
+
+值得一提的几个细节：
+
+1. **Claude Agent 和 Codex CLI 自己并没有原生实现 ACP**——是 Zed 给它们各写了一个适配器（`claude-agent-acp`、`codex-acp`），把它们各自私有的 CLI 行为翻译成 ACP 协议。这是一个挺务实的过渡路径：**让存量 Agent 不重写也能接入生态**。
+2. **JetBrains 和 VS Code 的支持**意味着 ACP 已经跨出了"小众编辑器"的范畴——这两家加起来基本上覆盖了绝大多数企业开发者的 IDE。
+3. **Notebook 类的客户端**（marimo、DuckDB、agent-client-kernel）也进来了——这意味着 ACP 的"agent"语义不一定非得是改代码，也可以是分析数据、做研究。
+4. **Frameworks** 这一栏出现了 LangChain / LangGraph / LlamaIndex / Mastra——意味着你用这些框架搭出来的 Agent，只要按 ACP 接口包一层，就能直接被任何 ACP 客户端调用。
+
+---
+
+## 一个最小的 TypeScript 客户端示例
+
+光看 JSON 太抽象了。下面是我用官方 `@agentclientprotocol/sdk` 写的最小客户端例子——连上一个本地 Agent，然后发一句"你好"：
+
+```ts:client.ts
+import { ClientSideConnection, ndJsonStream } from '@agentclientprotocol/sdk'
+import { spawn } from 'node:child_process'
+import { Writable, Readable } from 'node:stream'
+
+// 1. 启动 Agent 作为子进程，stdin/stdout 用 ndjson 包裹
+const agent = spawn('my-agent', ['--stdio'], {
+  stdio: ['pipe', 'pipe', 'inherit'],
+})
+
+const writer = Writable.toWeb(agent.stdin!)
+const reader = Readable.toWeb(agent.stdout!) as ReadableStream<Uint8Array>
+
+// 2. 建一个连接：客户端侧会自动发出 initialize
+const client = new ClientSideConnection(
+  (msg) => writer.write(new TextEncoder().encode(JSON.stringify(msg) + '\n')),
+  ndJsonStream(reader),
+  {
+    onRequest: async (req) => {
+      // Agent 反过来请求权限 / 读文件时回调这里
+      if (req.method === 'session/request_permission') {
+        return { outcome: { outcome: 'selected', optionId: 'allow-once' } }
+      }
+      throw new Error(`Unsupported request: ${req.method}`)
+    },
+    onNotification: async () => {},
+  }
+)
+
+// 3. 启动一个新 session
+const { sessionId } = await client.newSession({
+  cwd: process.cwd(),
+  mcpServers: [],
+})
+
+// 4. 发一句 prompt
+await client.prompt({
+  sessionId,
+  prompt: [{ type: 'text', text: '列出当前目录下所有的 .md 文件' }],
+})
+```
+
+这段代码里值得停一下的几个地方：
+
+- `ClientSideConnection` 帮我们处理了 `initialize`、能力协商、版本回退——这些琐碎的 JSON-RPC 细节你不需要自己重写。
+- `onRequest` 是反向回调——Agent 想让你确认权限、想读你机器上的文件、想跑 shell 命令，都会通过这里问你。**这是 ACP 安全模型的入口**。
+- `ndJsonStream` 是传输层适配——本地是 stdio，远程是 WebSocket，你不需要在业务代码里区分。
+
+把 `spawn('my-agent', ...)` 换成 `spawn('claude-agent-acp', ...)` 或者 `spawn('opencode', ['--acp'])`，你的客户端就能对接任何支持 ACP 的 Agent。**这是它真正的卖点**。
+
+---
+
+## 我看到的几个不舒服的地方
+
+**1. 命名撞车太严重。**
+
+ACP 这个缩写被用过太多次了——Agent Communication Protocol（思科、IBM 推的那个 REST 协议）、Agent Compute Platform、Accessibility Checker Protocol、Advanced Content Provider……你搜 "ACP" 出来的结果前两页基本没有跟 Agent Client Protocol 相关的。这件事会让一个新人很难找到它，也会让"ACP 协议"这个标签在中文社区里很难沉淀下来。
+
+**2. 远程传输还没准备好。**
+
+[文档原文](https://agentclientprotocol.com/)说 HTTP / WebSocket 的远程 agent "is a work in progress"。也就是说——**目前你只能在本地用**。如果你的 Agent 想跑在云端、想多人协作、想多端同步会话历史，ACP 现在的能力是不够的。v2 unstable 分支已经在做，但稳定版用户还得等。
+
+**3. Session 恢复语义有点暧昧。**
+
+ACP 同时有 `session/load`（重放历史）和 `session/resume`（只恢复上下文、不重放）——这两种能力的语义边界在文档里有点模糊。你恢复 session 的时候，UI 应该展示完整对话记录，还是只显示一条"已恢复"的提示？这个决策被推给了客户端实现者，结果就是不同 Agent 行为不一致。
+
+**4. 适配器这种"翻译层"是双刃剑。**
+
+Zed 给 Claude Agent 和 Codex CLI 各写了一个 ACP 适配器，让存量 Agent 也能接入生态——这是务实做法。但适配器意味着**多一层抽象、多一层版本漂移的风险、多一层 bug 的来源**。当 Claude Agent 自己内部协议变更时，适配器要么紧跟重写，要么落后于原生体验。
+
+---
+
+## 为什么我觉得它值得被认真看
+
+老实说，**协议类项目最难的不是设计协议，是让足够多的玩家愿意坐到同一张桌子前**。LSP 当年是 Microsoft 牵头、Red Hat、GitHub、JetBrains 这些重要玩家一起推才起来的。MCP 也是 Anthropic 抛出来、各家 Agent 厂商陆续接入才跑通的。
+
+ACP 在这两点上做得比很多人预期的要好——一年时间拉到了 JetBrains、VS Code、Cursor、GitHub Copilot、Gemini CLI、Goose、Kimi、OpenCode 这些名字进场。它的 1.0 不是一个"我们搞了个规范你们来用"的姿态，而是"我们已经有人在用了，你们可以放心接"。
+
+对一个开发者来说，最直接的意义是：
+
+- 你**不再被绑死在某个编辑器的某个 Agent 上**。今天用 Zed + Claude，明天想试 Cursor + Gemini，后天想试 JetBrains + OpenCode，切换成本接近零。
+- 你**不再被绑死在某个 Agent 的某个界面上**。同一个 Claude Agent 后端，可以接进 IDE、CLI、桌面应用、Notebook、Slack bot——只要这些客户端实现了 ACP。
+- **做 Agent 的人不用为每家编辑器写适配器**——只需要按 ACP 实现一次，所有 ACP 客户端自动接入。
+
+最后一点是真正的杠杆。LSP 当年解放的是语言服务，ACP 想解放的是 Agent。这种"被低估的基础设施"——做基础设施的人永远不指望它火，但它会让上面所有的应用都变得更轻。
+
+---
+
+## 写在最后
+
+我之前一直不太 care 这种"协议类"的项目——总觉得大厂牵头搞的规范要么是 PR 工程，要么落地太慢。ACP 让我改观的地方在于，它**没那么大厂**——Zed 不算巨头，registry 里一半是社区驱动，一半是个人开发者的小工具，但一年下来生态是真的起来了。
+
+1.0 稳定版是个不错的观察点：往前看一年的迭代节奏，往后看 v2 在铺什么基础设施。如果你也在做 Agent 相关的东西，**花一个小时读一下 spec**（[agentclientprotocol.com](https://agentclientprotocol.com/)）大概率值。
+
+至于它能不能像 LSP 一样被记住——这种问题交给两年后的自己回答就好。
+
+---
+
+_标签：_ #AI
